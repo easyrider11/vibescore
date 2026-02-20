@@ -33,12 +33,12 @@ docker compose up --build
 2) Recruiter: `/app` → pick a scenario → Create Session
 3) Copy candidate link: `/s/{token}`
 4) Candidate:
-   - Open file, edit, save
-   - Ask AI
+   - Browse files, search repo, edit, save
+   - Ask AI (mode: summary/explain/tests/review)
    - Run tests
-   - Submit snapshot
+   - Add clarification notes and submit snapshot
 5) Interviewer:
-   - `/app/sessions/{id}` view timeline + AI chats + diffs
+   - `/app/sessions/{id}` view timeline + AI chats + diffs + test output
    - Score rubric (5 dimensions)
 
 ## Scenarios (seeded)

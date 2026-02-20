@@ -28,8 +28,13 @@ model Scenario {
   slug        String   @unique
   title       String
   description String
+  background  String
   tasks       Json
+  hints       Json
+  evaluationPoints Json
   rubric      Json
+  aiPolicy    Json
+  timeLimitMin Int?
   createdAt   DateTime @default(now())
   sessions    InterviewSession[]
 }
@@ -62,6 +67,7 @@ model Submission {
   sessionId   String
   snapshot    Json
   diffText    String
+  clarificationNotes String?
   createdAt   DateTime @default(now())
   session     InterviewSession @relation(fields: [sessionId], references: [id])
 }

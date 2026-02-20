@@ -20,8 +20,13 @@ export async function GET(_: Request, { params }: { params: { token: string } })
     scenario: {
       title: session.scenario.title,
       description: session.scenario.description,
+      background: session.scenario.background,
       tasks: session.scenario.tasks,
+      hints: session.scenario.hints,
+      evaluationPoints: session.scenario.evaluationPoints,
       rubric: session.scenario.rubric,
+      aiPolicy: session.scenario.aiPolicy,
+      timeLimitMin: session.scenario.timeLimitMin,
       slug: session.scenario.slug,
     },
     files,

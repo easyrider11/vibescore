@@ -10,6 +10,7 @@ const SEED_ROOT = path.join(process.cwd(), "seeds", "scenarios");
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const token = body.token?.toString();
+  const clarificationNotes = body.clarificationNotes?.toString() ?? null;
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
   const session = await prisma.interviewSession.findUnique({
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
       sessionId: session.id,
       snapshot,
       diffText,
+      clarificationNotes,
     },
   });
 

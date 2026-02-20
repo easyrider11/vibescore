@@ -19,10 +19,13 @@ vi.mock("../lib/workspace", () => ({
   safePath: (_root: string, p: string) => p,
 }));
 
-vi.mock("fs/promises", () => ({
-  default: {},
-  readFile: vi.fn().mockResolvedValue("console.log('hi')"),
-}));
+vi.mock("fs/promises", () => {
+  const readFile = vi.fn().mockResolvedValue("console.log('hi')");
+  return {
+    default: { readFile },
+    readFile,
+  };
+});
 
 describe("POST /api/run-tests", () => {
   it("returns test result", async () => {
