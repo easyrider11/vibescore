@@ -29,11 +29,11 @@ model Scenario {
   title       String
   description String
   background  String
-  tasks       Json
-  hints       Json
-  evaluationPoints Json
-  rubric      Json
-  aiPolicy    Json
+  tasks       String
+  hints       String
+  evaluationPoints String
+  rubric      String
+  aiPolicy    String
   timeLimitMin Int?
   createdAt   DateTime @default(now())
   sessions    InterviewSession[]
@@ -57,7 +57,7 @@ model Event {
   id          String   @id @default(cuid())
   sessionId   String
   type        String
-  payload     Json
+  payload     String
   createdAt   DateTime @default(now())
   session     InterviewSession @relation(fields: [sessionId], references: [id])
 }
@@ -65,7 +65,7 @@ model Event {
 model Submission {
   id          String   @id @default(cuid())
   sessionId   String
-  snapshot    Json
+  snapshot    String
   diffText    String
   clarificationNotes String?
   createdAt   DateTime @default(now())
@@ -75,7 +75,7 @@ model Submission {
 model RubricScore {
   id          String   @id @default(cuid())
   sessionId   String
-  scores      Json
+  scores      String
   comments    String
   createdAt   DateTime @default(now())
   session     InterviewSession @relation(fields: [sessionId], references: [id])

@@ -4,6 +4,7 @@ import path from "path";
 import { prisma } from "../../../lib/prisma";
 import { ensureWorkspace, getWorkspacePath, listFiles, safePath } from "../../../lib/workspace";
 import { diffFiles } from "../../../lib/diff";
+import { toJsonString } from "../../../lib/json";
 
 const SEED_ROOT = path.join(process.cwd(), "seeds", "scenarios");
 
@@ -41,14 +42,14 @@ export async function POST(req: NextRequest) {
   const submission = await prisma.submission.create({
     data: {
       sessionId: session.id,
-      snapshot,
+      snapshot: toJsonString(snapshot),
       diffText,
       clarificationNotes,
     },
   });
 
   await prisma.event.create({
-    data: { sessionId: session.id, type: "SUBMIT", payload: { submissionId: submission.id } },
+    data: { sessionId: session.id, type: "SUBMIT", payload: toJsonString({ submissionId: submission.id }) },
   });
 
   return NextResponse.json({ submissionId: submission.id });

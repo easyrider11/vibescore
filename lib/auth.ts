@@ -16,7 +16,8 @@ export async function createSession(email: string) {
     data: { token, userId: user.id },
   });
 
-  cookies().set({
+  const cookieStore = await cookies();
+  cookieStore.set({
     name: COOKIE_NAME,
     value: token,
     httpOnly: true,
@@ -28,7 +29,8 @@ export async function createSession(email: string) {
 }
 
 export async function getCurrentUser() {
-  const token = cookies().get(COOKIE_NAME)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
   const session = await prisma.sessionToken.findUnique({
     where: { token },
@@ -38,9 +40,10 @@ export async function getCurrentUser() {
 }
 
 export async function clearSession() {
-  const token = cookies().get(COOKIE_NAME)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
   if (token) {
     await prisma.sessionToken.deleteMany({ where: { token } });
   }
-  cookies().set({ name: COOKIE_NAME, value: "", maxAge: 0, path: "/" });
+  cookieStore.set({ name: COOKIE_NAME, value: "", maxAge: 0, path: "/" });
 }

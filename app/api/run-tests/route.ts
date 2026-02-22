@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import { prisma } from "../../../lib/prisma";
 import { ensureWorkspace, getWorkspacePath, listFiles, safePath } from "../../../lib/workspace";
+import { toJsonString } from "../../../lib/json";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     data: {
       sessionId: session.id,
       type: "RUN_TESTS",
-      payload: result,
+      payload: toJsonString(result),
     },
   });
 

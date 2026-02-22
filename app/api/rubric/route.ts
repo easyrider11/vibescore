@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
+import { toJsonString } from "../../../lib/json";
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
   const rubric = await prisma.rubricScore.create({
     data: {
       sessionId,
-      scores,
+      scores: toJsonString(scores),
       comments,
     },
   });

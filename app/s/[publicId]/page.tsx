@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import CodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 
-export default function CandidateWorkspace({ params }: { params: { publicId: string } }) {
+export default function CandidateWorkspace() {
+  const params = useParams<{ publicId: string }>();
+  const publicId = params.publicId || "";
   const [session, setSession] = useState<any>(null);
   const [files, setFiles] = useState<string[]>([]);
   const [activeFile, setActiveFile] = useState<string>("");
@@ -24,7 +27,8 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
 
   useEffect(() => {
     async function load() {
-      const res = await fetch(`/api/sessions/${params.publicId}`);
+      if (!publicId) return;
+      const res = await fetch(`/api/sessions/${publicId}`);
       if (!res.ok) {
         setStatus("Invalid session link");
         return;
@@ -39,11 +43,11 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
       await fetch("/api/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: params.publicId, type: "START_SESSION", payload: { time: new Date().toISOString() } }),
+        body: JSON.stringify({ token: publicId, type: "START_SESSION", payload: { time: new Date().toISOString() } }),
       });
     }
     load();
-  }, [params.publicId]);
+  }, [publicId]);
 
   const editorExtensions = useMemo(() => {
     const lang = session?.scenario?.slug === "feature-add" ? "javascript" : "javascript";
@@ -53,7 +57,7 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
 
   async function openFile(path: string) {
     setActiveFile(path);
-    const res = await fetch(`/api/workspace?token=${params.publicId}&path=${encodeURIComponent(path)}`);
+    const res = await fetch(`/api/workspace?token=${publicId}&path=${encodeURIComponent(path)}`);
     const data = await res.json();
     setContent(data.content || "");
   }
@@ -62,7 +66,7 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
     await fetch("/api/workspace", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: params.publicId, path: activeFile, content }),
+      body: JSON.stringify({ token: publicId, path: activeFile, content }),
     });
     setStatus("Saved.");
   }
@@ -71,7 +75,7 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
     const res = await fetch("/api/run-tests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: params.publicId }),
+      body: JSON.stringify({ token: publicId }),
     });
     const data = await res.json();
     setStatus(`${data.stdout} (exit ${data.exitCode})`);
@@ -82,7 +86,7 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
     const res = await fetch("/api/ai/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: params.publicId, question, context: content, mode: aiMode }),
+      body: JSON.stringify({ token: publicId, question, context: content, mode: aiMode }),
     });
     const data = await res.json();
     setAiResponse(data.response);
@@ -91,7 +95,7 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
 
   async function searchRepo() {
     if (!searchQuery.trim()) return;
-    const res = await fetch(`/api/workspace/search?token=${params.publicId}&q=${encodeURIComponent(searchQuery)}`);
+    const res = await fetch(`/api/workspace/search?token=${publicId}&q=${encodeURIComponent(searchQuery)}`);
     const data = await res.json();
     setSearchResults(data.results || []);
   }
@@ -101,12 +105,12 @@ export default function CandidateWorkspace({ params }: { params: { publicId: str
     await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: params.publicId, type: "CLARIFICATION_NOTES", payload: { notes: clarificationNotes } }),
+      body: JSON.stringify({ token: publicId, type: "CLARIFICATION_NOTES", payload: { notes: clarificationNotes } }),
     });
     const res = await fetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: params.publicId, clarificationNotes }),
+      body: JSON.stringify({ token: publicId, clarificationNotes }),
     });
     if (res.ok) setStatus("Submitted snapshot.");
   }

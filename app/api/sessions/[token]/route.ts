@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { ensureWorkspace, getWorkspacePath, listFiles } from "../../../../lib/workspace";
+import { parseJsonOr } from "../../../../lib/json";
 
-export async function GET(_: Request, { params }: { params: { token: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
   const session = await prisma.interviewSession.findUnique({
-    where: { publicToken: params.token },
+    where: { publicToken: token },
     include: { scenario: true },
   });
 
@@ -21,11 +23,11 @@ export async function GET(_: Request, { params }: { params: { token: string } })
       title: session.scenario.title,
       description: session.scenario.description,
       background: session.scenario.background,
-      tasks: session.scenario.tasks,
-      hints: session.scenario.hints,
-      evaluationPoints: session.scenario.evaluationPoints,
-      rubric: session.scenario.rubric,
-      aiPolicy: session.scenario.aiPolicy,
+      tasks: parseJsonOr<string[]>(session.scenario.tasks, []),
+      hints: parseJsonOr<string[]>(session.scenario.hints, []),
+      evaluationPoints: parseJsonOr<string[]>(session.scenario.evaluationPoints, []),
+      rubric: parseJsonOr<string[]>(session.scenario.rubric, []),
+      aiPolicy: parseJsonOr<{ allowedModes?: string[] }>(session.scenario.aiPolicy, { allowedModes: [] }),
       timeLimitMin: session.scenario.timeLimitMin,
       slug: session.scenario.slug,
     },

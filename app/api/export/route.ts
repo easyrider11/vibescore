@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
+import { parseJsonOr } from "../../../lib/json";
 
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
@@ -17,15 +18,39 @@ export async function GET(req: NextRequest) {
 
   if (!session) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const scenario = {
+    ...session.scenario,
+    tasks: parseJsonOr<string[]>(session.scenario.tasks, []),
+    hints: parseJsonOr<string[]>(session.scenario.hints, []),
+    evaluationPoints: parseJsonOr<string[]>(session.scenario.evaluationPoints, []),
+    rubric: parseJsonOr<string[]>(session.scenario.rubric, []),
+    aiPolicy: parseJsonOr<Record<string, unknown>>(session.scenario.aiPolicy, {}),
+  };
+
+  const events = session.events.map((event) => ({
+    ...event,
+    payload: parseJsonOr<Record<string, unknown>>(event.payload, {}),
+  }));
+
+  const submissions = session.submissions.map((submission) => ({
+    ...submission,
+    snapshot: parseJsonOr<Record<string, string>>(submission.snapshot, {}),
+  }));
+
+  const rubricScores = session.rubricScores.map((item) => ({
+    ...item,
+    scores: parseJsonOr<Record<string, number>>(item.scores, {}),
+  }));
+
   return NextResponse.json({
     session: {
       id: session.id,
       publicToken: session.publicToken,
       createdAt: session.createdAt,
-      scenario: session.scenario,
+      scenario,
     },
-    events: session.events,
-    submissions: session.submissions,
-    rubricScores: session.rubricScores,
+    events,
+    submissions,
+    rubricScores,
   });
 }

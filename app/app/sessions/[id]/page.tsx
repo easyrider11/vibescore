@@ -5,13 +5,15 @@ import { prisma } from "../../../../lib/prisma";
 import { TopBar } from "../../../../components/TopBar";
 import { RubricForm } from "../../../../components/RubricForm";
 import { DiffViewer } from "../../../../components/DiffViewer";
+import { parseJsonOr } from "../../../../lib/json";
 
-export default async function SessionDetailPage({ params }: { params: { id: string } }) {
+export default async function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const session = await prisma.interviewSession.findFirst({
-    where: { id: params.id, createdById: user.id },
+    where: { id, createdById: user.id },
     include: { scenario: true, events: true, submissions: true, rubricScores: true },
   });
 
@@ -20,7 +22,12 @@ export default async function SessionDetailPage({ params }: { params: { id: stri
   const sortedEvents = session.events.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   const aiEvents = sortedEvents.filter((event) => event.type === "AI_CHAT");
   const lastTest = [...sortedEvents].reverse().find((event) => event.type === "RUN_TESTS");
-  const aiModes = (session.scenario.aiPolicy as any)?.allowedModes || [];
+  const aiPolicy = parseJsonOr<{ allowedModes?: string[] }>(session.scenario.aiPolicy, {});
+  const aiModes = aiPolicy.allowedModes || [];
+  const scenarioTasks = parseJsonOr<string[]>(session.scenario.tasks, []);
+  const scenarioHints = parseJsonOr<string[]>(session.scenario.hints, []);
+  const scenarioEvaluationPoints = parseJsonOr<string[]>(session.scenario.evaluationPoints, []);
+  const lastTestPayload = parseJsonOr<{ stdout?: string }>(lastTest?.payload, {});
 
   return (
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-8 py-12">
@@ -47,19 +54,19 @@ export default async function SessionDetailPage({ params }: { params: { id: stri
         <div className="text-xs text-slate-500">Time limit: {session.scenario.timeLimitMin || "N/A"} min</div>
         <h3 className="text-sm font-semibold">Tasks</h3>
         <ul className="text-sm text-slate-600 list-disc pl-4">
-          {(session.scenario.tasks as string[]).map((task) => (
+          {scenarioTasks.map((task) => (
             <li key={task}>{task}</li>
           ))}
         </ul>
         <h3 className="text-sm font-semibold">Hints</h3>
         <ul className="text-sm text-slate-600 list-disc pl-4">
-          {(session.scenario.hints as string[]).map((hint) => (
+          {scenarioHints.map((hint) => (
             <li key={hint}>{hint}</li>
           ))}
         </ul>
         <h3 className="text-sm font-semibold">Evaluation Points</h3>
         <ul className="text-sm text-slate-600 list-disc pl-4">
-          {(session.scenario.evaluationPoints as string[]).map((point) => (
+          {scenarioEvaluationPoints.map((point) => (
             <li key={point}>{point}</li>
           ))}
         </ul>
@@ -87,12 +94,15 @@ export default async function SessionDetailPage({ params }: { params: { id: stri
           <div className="card p-6 text-sm text-slate-600">No AI interactions yet.</div>
         ) : (
           <div className="card p-6 space-y-3 text-sm">
-            {aiEvents.map((event) => (
-              <div key={event.id}>
-                <div className="font-semibold">[{String((event.payload as any).mode)}] Q: {String((event.payload as any).question)}</div>
-                <div className="text-slate-600">A: {String((event.payload as any).response)}</div>
-              </div>
-            ))}
+            {aiEvents.map((event) => {
+              const payload = parseJsonOr<{ mode?: string; question?: string; response?: string }>(event.payload, {});
+              return (
+                <div key={event.id}>
+                  <div className="font-semibold">[{String(payload.mode || "")}] Q: {String(payload.question || "")}</div>
+                  <div className="text-slate-600">A: {String(payload.response || "")}</div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
@@ -101,7 +111,7 @@ export default async function SessionDetailPage({ params }: { params: { id: stri
         <h2 className="font-display text-lg font-semibold">Test Output</h2>
         {lastTest ? (
           <div className="card p-6 text-xs text-slate-600 whitespace-pre-wrap">
-            {String((lastTest.payload as any).stdout || "")}
+            {String(lastTestPayload.stdout || "")}
           </div>
         ) : (
           <div className="card p-6 text-sm text-slate-600">No test runs yet.</div>

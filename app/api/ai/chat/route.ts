@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "../../../../lib/prisma";
+import { parseJsonOr, toJsonString } from "../../../../lib/json";
 
 const fallbackByMode: Record<string, string[]> = {
   summary: [
@@ -35,7 +36,8 @@ export async function POST(req: NextRequest) {
   const session = await prisma.interviewSession.findUnique({ where: { publicToken: token }, include: { scenario: true } });
   if (!session) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const allowedModes: string[] = (session.scenario.aiPolicy as any)?.allowedModes || ["summary", "explain", "tests", "review"];
+  const aiPolicy = parseJsonOr<{ allowedModes?: string[] }>(session.scenario.aiPolicy, {});
+  const allowedModes: string[] = aiPolicy.allowedModes || ["summary", "explain", "tests", "review"];
   if (!allowedModes.includes(mode)) {
     return NextResponse.json({ error: "Mode not allowed" }, { status: 403 });
   }
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
     data: {
       sessionId: session.id,
       type: "AI_CHAT",
-      payload: { question, response, mocked, mode },
+      payload: toJsonString({ question, response, mocked, mode }),
     },
   });
 
