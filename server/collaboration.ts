@@ -14,12 +14,10 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const PORT = Number(process.env.COLLAB_PORT) || 3002;
 
-const server = Server.configure({
+const server = new Server({
   port: PORT,
 
   async onAuthenticate({ token, documentName }) {
-    // token = publicToken of the session, documentName = session publicToken
-    // Validate that the session exists and is active
     const session = await prisma.interviewSession.findUnique({
       where: { publicToken: documentName },
     });
@@ -27,7 +25,6 @@ const server = Server.configure({
     if (!session) throw new Error("Session not found");
     if (session.status === "cancelled") throw new Error("Session cancelled");
 
-    // Allow completed sessions in read-only mode (handled client-side)
     return {
       user: {
         token,
@@ -38,7 +35,6 @@ const server = Server.configure({
   },
 
   async onLoadDocument({ document, documentName }) {
-    // Load workspace files into Yjs document if empty
     const session = await prisma.interviewSession.findUnique({
       where: { publicToken: documentName },
       include: { scenario: true },
@@ -46,11 +42,9 @@ const server = Server.configure({
 
     if (!session) return;
 
-    // Check if we've already initialized this document
     const metaText = document.getText("__meta__");
-    if (metaText.toString().length > 0) return; // Already initialized
+    if (metaText.toString().length > 0) return;
 
-    // Load files from workspace
     const workspacePath = `workspaces/${session.id}`;
     try {
       const fs = await import("fs");
@@ -85,7 +79,6 @@ const server = Server.configure({
   },
 
   async onStoreDocument({ document, documentName }) {
-    // Persist Y.Text contents back to workspace files
     const session = await prisma.interviewSession.findUnique({
       where: { publicToken: documentName },
     });
@@ -96,11 +89,10 @@ const server = Server.configure({
     const fs = await import("fs");
     const path = await import("path");
 
-    // Iterate over all Y.Text instances in the document
     const state = document.toJSON();
     for (const [key, value] of Object.entries(state)) {
       if (!key.startsWith("file:")) continue;
-      const filePath = key.slice(5); // remove "file:" prefix
+      const filePath = key.slice(5);
       const fullPath = path.join(workspacePath, filePath);
 
       try {

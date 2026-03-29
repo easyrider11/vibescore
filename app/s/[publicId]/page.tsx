@@ -3,9 +3,8 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { HocuspocusProvider } from "@hocuspocus/provider";
-import * as Y from "yjs";
-import { MonacoBinding } from "y-monaco";
+import type { HocuspocusProvider as HocuspocusProviderType } from "@hocuspocus/provider";
+import type { MonacoBinding as MonacoBindingType } from "y-monaco";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 const DiffEditor = dynamic(() => import("@monaco-editor/react").then((m) => ({ default: m.DiffEditor })), { ssr: false });
@@ -89,8 +88,8 @@ export default function CandidateWorkspace() {
   const abortRef = useRef<AbortController | null>(null);
 
   /* Collaborative editing (Yjs) */
-  const yjsProviderRef = useRef<HocuspocusProvider | null>(null);
-  const monacoBindingRef = useRef<MonacoBinding | null>(null);
+  const yjsProviderRef = useRef<HocuspocusProviderType | null>(null);
+  const monacoBindingRef = useRef<MonacoBindingType | null>(null);
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
   const [collabConnected, setCollabConnected] = useState(false);
@@ -168,50 +167,59 @@ export default function CandidateWorkspace() {
     if (!session || !publicId) return;
 
     const collabUrl = process.env.NEXT_PUBLIC_COLLAB_URL || "ws://localhost:3002";
+    let destroyed = false;
 
-    try {
-      const provider = new HocuspocusProvider({
-        url: collabUrl,
-        name: publicId, // room name = session token
-        token: publicId,
-        onConnect() {
-          setCollabConnected(true);
-        },
-        onDisconnect() {
-          setCollabConnected(false);
-        },
-        onAwarenessUpdate({ states }) {
-          const users: Array<{ name: string; color: string; filePath?: string }> = [];
-          states.forEach((state: any) => {
-            if (state.user) {
-              users.push({
-                name: state.user.name || "Unknown",
-                color: state.user.color || "#3b82f6",
-                filePath: state.cursor?.filePath,
-              });
-            }
-          });
-          setRemoteUsers(users);
-        },
-      });
+    (async () => {
+      try {
+        const { HocuspocusProvider } = await import("@hocuspocus/provider");
 
-      // Set local awareness
-      provider.awareness?.setLocalStateField("user", {
-        name: session.candidateName || "Candidate",
-        color: "#3b82f6",
-        role: "candidate",
-      });
+        if (destroyed) return;
 
-      yjsProviderRef.current = provider;
+        const provider = new HocuspocusProvider({
+          url: collabUrl,
+          name: publicId, // room name = session token
+          token: publicId,
+          onConnect() {
+            setCollabConnected(true);
+          },
+          onDisconnect() {
+            setCollabConnected(false);
+          },
+          onAwarenessUpdate({ states }) {
+            const users: Array<{ name: string; color: string; filePath?: string }> = [];
+            states.forEach((state: any) => {
+              if (state.user) {
+                users.push({
+                  name: state.user.name || "Unknown",
+                  color: state.user.color || "#3b82f6",
+                  filePath: state.cursor?.filePath,
+                });
+              }
+            });
+            setRemoteUsers(users);
+          },
+        });
 
-      return () => {
-        provider.destroy();
+        // Set local awareness
+        provider.awareness?.setLocalStateField("user", {
+          name: session.candidateName || "Candidate",
+          color: "#3b82f6",
+          role: "candidate",
+        });
+
+        yjsProviderRef.current = provider;
+      } catch {
+        // Collab server not available — continue without collaboration
+      }
+    })();
+
+    return () => {
+      destroyed = true;
+      if (yjsProviderRef.current) {
+        yjsProviderRef.current.destroy();
         yjsProviderRef.current = null;
-      };
-    } catch {
-      // Collab server not available — continue without collaboration
-      console.log("Collaboration server not available, continuing in solo mode");
-    }
+      }
+    };
   }, [session, publicId]);
 
   /* Update awareness when switching files */
@@ -240,19 +248,25 @@ export default function CandidateWorkspace() {
     const model = editorRef.current.getModel();
     if (!model) return;
 
-    try {
-      const binding = new MonacoBinding(
-        ytext,
-        model,
-        new Set([editorRef.current]),
-        yjsProviderRef.current.awareness
-      );
-      monacoBindingRef.current = binding;
-    } catch {
-      // Binding failed — continue without collab for this file
-    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { MonacoBinding } = await import("y-monaco");
+        if (cancelled) return;
+        const binding = new MonacoBinding(
+          ytext,
+          model,
+          new Set([editorRef.current]),
+          yjsProviderRef.current!.awareness
+        );
+        monacoBindingRef.current = binding;
+      } catch {
+        // Binding failed — continue without collab for this file
+      }
+    })();
 
     return () => {
+      cancelled = true;
       if (monacoBindingRef.current) {
         monacoBindingRef.current.destroy();
         monacoBindingRef.current = null;
