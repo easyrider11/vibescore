@@ -24,7 +24,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-6">
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-6 bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="card p-8 space-y-4">
         <h1 className="font-display text-3xl font-semibold text-ink">Recruiter sign in</h1>
         <p className="text-sm text-slate-600">Enter your work email to access your sessions.</p>
