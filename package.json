@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "prisma db seed",
-    "test": "vitest"
+    "test": "vitest",
+    "collab": "npx tsx server/collaboration.ts"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -18,16 +19,25 @@
   "dependencies": {
     "@codemirror/lang-javascript": "6.2.2",
     "@codemirror/lang-python": "6.2.0",
-    "@codemirror/state": "6.4.1",
+    "@codemirror/state": "6.6.0",
     "@codemirror/theme-one-dark": "6.1.2",
+    "@hocuspocus/provider": "^3.4.4",
+    "@hocuspocus/server": "^3.4.4",
+    "@monaco-editor/react": "^4.7.0",
     "@prisma/client": "5.19.0",
     "@uiw/react-codemirror": "4.22.2",
     "clsx": "2.1.1",
+    "monaco-editor": "^0.55.1",
     "next": "^16.1.6",
     "openai": "4.56.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "y-monaco": "^0.1.6",
+    "yjs": "^13.6.30",
     "zod": "3.23.8"
+  },
+  "overrides": {
+    "@codemirror/state": "6.6.0"
   },
   "devDependencies": {
     "@types/node": "20.12.12",

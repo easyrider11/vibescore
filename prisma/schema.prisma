@@ -40,17 +40,23 @@ model Scenario {
 }
 
 model InterviewSession {
-  id            String   @id @default(cuid())
-  publicToken   String   @unique
-  scenarioId    String
-  status        String   @default("active")
-  createdAt     DateTime @default(now())
-  createdById   String
-  scenario      Scenario @relation(fields: [scenarioId], references: [id])
-  createdBy     User     @relation(fields: [createdById], references: [id])
-  events        Event[]
-  submissions   Submission[]
-  rubricScores  RubricScore[]
+  id              String   @id @default(cuid())
+  publicToken     String   @unique
+  scenarioId      String
+  status          String   @default("pending") // pending, active, completed, cancelled
+  candidateName   String   @default("")
+  candidateEmail  String   @default("")
+  position        String   @default("")
+  durationMinutes Int      @default(45)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  createdAt       DateTime @default(now())
+  createdById     String
+  scenario        Scenario @relation(fields: [scenarioId], references: [id])
+  createdBy       User     @relation(fields: [createdById], references: [id])
+  events          Event[]
+  submissions     Submission[]
+  rubricScores    RubricScore[]
 }
 
 model Event {
@@ -77,6 +83,7 @@ model RubricScore {
   sessionId   String
   scores      String
   comments    String
+  decision    String   @default("")
   createdAt   DateTime @default(now())
   session     InterviewSession @relation(fields: [sessionId], references: [id])
 }
