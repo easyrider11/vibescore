@@ -1,54 +1,57 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
-import { TopBar } from "../../components/TopBar";
-import { ScenarioGrid } from "../../components/ScenarioGrid";
+import { SessionsTable } from "../../components/SessionsTable";
 
-export default async function RecruiterHome() {
+export default async function SessionsPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) return null;
 
   const scenarios = await prisma.scenario.findMany({ orderBy: { createdAt: "asc" } });
   const sessions = await prisma.interviewSession.findMany({
     where: { createdById: user.id },
-    include: { scenario: true },
+    include: { scenario: true, rubricScores: true },
     orderBy: { createdAt: "desc" },
   });
 
-  return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-8 py-12">
-      <TopBar title="Interviewer Console" subtitle={`Signed in as ${user.email}`} />
+  const sessionsData = sessions.map((s) => ({
+    id: s.id,
+    candidateName: s.candidateName || "Anonymous",
+    candidateEmail: s.candidateEmail || "",
+    position: s.position || "",
+    scenarioTitle: s.scenario.title,
+    scenarioSlug: s.scenario.slug,
+    status: s.status,
+    publicToken: s.publicToken,
+    durationMinutes: s.durationMinutes,
+    createdAt: s.createdAt.toISOString(),
+    startedAt: s.startedAt?.toISOString() || null,
+    endedAt: s.endedAt?.toISOString() || null,
+    score: s.rubricScores.length > 0 ? s.rubricScores[0].scores : null,
+    decision: s.rubricScores.length > 0 ? s.rubricScores[0].decision : null,
+  }));
 
-      <div className="flex flex-wrap gap-3">
-        <Link className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold" href="/api/logout">
-          Sign out
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-display text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+            Sessions
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            Manage interview sessions and review candidates
+          </p>
+        </div>
+        <Link
+          href="/app/new-session"
+          className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          style={{ background: "var(--accent-blue)" }}
+        >
+          + New Session
         </Link>
       </div>
 
-      <section className="space-y-4">
-        <h2 className="font-display text-xl font-semibold">Scenario Library</h2>
-        <ScenarioGrid scenarios={scenarios} />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-display text-xl font-semibold">Recent Sessions</h2>
-        {sessions.length === 0 ? (
-          <div className="card p-6 text-sm text-slate-600">No sessions yet.</div>
-        ) : (
-          sessions.map((session) => (
-            <div key={session.id} className="card p-5 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-semibold text-ink">{session.scenario.title}</div>
-                <div className="text-xs text-slate-500">Token: {session.publicToken}</div>
-              </div>
-              <Link className="text-sm font-semibold text-accent" href={`/app/sessions/${session.id}`}>
-                View
-              </Link>
-            </div>
-          ))
-        )}
-      </section>
-    </main>
+      <SessionsTable sessions={sessionsData} />
+    </div>
   );
 }

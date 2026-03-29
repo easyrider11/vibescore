@@ -15,12 +15,22 @@ export async function POST(req: NextRequest) {
   const scenario = await prisma.scenario.findUnique({ where: { id: scenarioId } });
   if (!scenario) return NextResponse.json({ error: "Scenario not found" }, { status: 404 });
 
+  const candidateName = body.candidateName?.toString() || "";
+  const candidateEmail = body.candidateEmail?.toString() || "";
+  const position = body.position?.toString() || "";
+  const durationMinutes = Number(body.durationMinutes) || scenario.timeLimitMin || 45;
+
   const publicToken = crypto.randomBytes(12).toString("hex");
   const session = await prisma.interviewSession.create({
     data: {
       scenarioId: scenario.id,
       createdById: user.id,
       publicToken,
+      candidateName,
+      candidateEmail,
+      position,
+      durationMinutes,
+      status: "pending",
     },
   });
 
