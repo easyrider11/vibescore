@@ -3,12 +3,19 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+enum SessionStatus {
+  pending
+  active
+  completed
+  cancelled
+}
+
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   email     String   @unique
   createdAt DateTime @default(now())
   sessions  InterviewSession[]
@@ -16,7 +23,7 @@ model User {
 }
 
 model SessionToken {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String
   token     String   @unique
   createdAt DateTime @default(now())
@@ -24,66 +31,66 @@ model SessionToken {
 }
 
 model Scenario {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String
-  background  String
-  tasks       String
-  hints       String
-  evaluationPoints String
-  rubric      String
-  aiPolicy    String
-  timeLimitMin Int?
-  createdAt   DateTime @default(now())
-  sessions    InterviewSession[]
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  title            String
+  description      String
+  background       String
+  tasks            Json
+  hints            Json
+  evaluationPoints Json
+  rubric           Json
+  aiPolicy         Json
+  timeLimitMin     Int?
+  createdAt        DateTime @default(now())
+  sessions         InterviewSession[]
 }
 
 model InterviewSession {
-  id              String   @id @default(cuid())
-  publicToken     String   @unique
+  id              String        @id @default(uuid())
+  publicToken     String        @unique
   scenarioId      String
-  status          String   @default("pending") // pending, active, completed, cancelled
-  candidateName   String   @default("")
-  candidateEmail  String   @default("")
-  position        String   @default("")
-  durationMinutes Int      @default(45)
+  status          SessionStatus @default(pending)
+  candidateName   String        @default("")
+  candidateEmail  String        @default("")
+  position        String        @default("")
+  durationMinutes Int           @default(45)
   startedAt       DateTime?
   endedAt         DateTime?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime      @default(now())
   createdById     String
-  scenario        Scenario @relation(fields: [scenarioId], references: [id])
-  createdBy       User     @relation(fields: [createdById], references: [id])
+  scenario        Scenario      @relation(fields: [scenarioId], references: [id])
+  createdBy       User          @relation(fields: [createdById], references: [id])
   events          Event[]
   submissions     Submission[]
   rubricScores    RubricScore[]
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  sessionId   String
-  type        String
-  payload     String
-  createdAt   DateTime @default(now())
-  session     InterviewSession @relation(fields: [sessionId], references: [id])
+  id        String           @id @default(uuid())
+  sessionId String
+  type      String
+  payload   Json
+  createdAt DateTime         @default(now())
+  session   InterviewSession @relation(fields: [sessionId], references: [id])
 }
 
 model Submission {
-  id          String   @id @default(cuid())
-  sessionId   String
-  snapshot    String
-  diffText    String
+  id                 String           @id @default(uuid())
+  sessionId          String
+  snapshot           Json
+  diffText           String
   clarificationNotes String?
-  createdAt   DateTime @default(now())
-  session     InterviewSession @relation(fields: [sessionId], references: [id])
+  createdAt          DateTime         @default(now())
+  session            InterviewSession @relation(fields: [sessionId], references: [id])
 }
 
 model RubricScore {
-  id          String   @id @default(cuid())
-  sessionId   String
-  scores      String
-  comments    String
-  decision    String   @default("")
-  createdAt   DateTime @default(now())
-  session     InterviewSession @relation(fields: [sessionId], references: [id])
+  id        String           @id @default(uuid())
+  sessionId String
+  scores    Json
+  comments  String
+  decision  String           @default("")
+  createdAt DateTime         @default(now())
+  session   InterviewSession @relation(fields: [sessionId], references: [id])
 }

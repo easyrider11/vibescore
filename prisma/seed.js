@@ -94,19 +94,10 @@ async function main() {
   ];
 
   for (const scenario of scenarios) {
-    const dbScenario = {
-      ...scenario,
-      tasks: JSON.stringify(scenario.tasks),
-      hints: JSON.stringify(scenario.hints),
-      evaluationPoints: JSON.stringify(scenario.evaluationPoints),
-      rubric: JSON.stringify(scenario.rubric),
-      aiPolicy: JSON.stringify(scenario.aiPolicy),
-    };
-
     await prisma.scenario.upsert({
       where: { slug: scenario.slug },
-      update: dbScenario,
-      create: dbScenario,
+      update: scenario,
+      create: scenario,
     });
   }
 

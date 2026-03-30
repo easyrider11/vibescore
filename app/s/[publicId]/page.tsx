@@ -166,7 +166,7 @@ export default function CandidateWorkspace() {
   useEffect(() => {
     if (!session || !publicId) return;
 
-    const collabUrl = process.env.NEXT_PUBLIC_COLLAB_URL || "ws://localhost:3002";
+    const collabUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3002";
     let destroyed = false;
 
     (async () => {

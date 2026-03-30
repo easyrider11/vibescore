@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../lib/prisma";
-import { parseJsonOr, toJsonString } from "../../../../lib/json";
+import { parseJsonOr } from "../../../../lib/json";
 
 const fallbackByMode: Record<string, string[]> = {
   summary: [
@@ -148,7 +148,7 @@ Mode: ${mode}`;
           data: {
             sessionId: session.id,
             type: "AI_CHAT",
-            payload: toJsonString({ question, response: fullResponse, mocked: false, mode, model: selectedModel, tokensUsed, responseTimeMs }),
+            payload: { question, response: fullResponse, mocked: false, mode, model: selectedModel, tokensUsed, responseTimeMs },
           },
         });
 
@@ -216,7 +216,7 @@ Mode: ${mode}`;
     data: {
       sessionId: session.id,
       type: "AI_CHAT",
-      payload: toJsonString({ question, response, mocked, mode, model, tokensUsed, responseTimeMs }),
+      payload: { question, response, mocked, mode, model, tokensUsed, responseTimeMs },
     },
   });
 
@@ -244,7 +244,7 @@ async function mockStreamResponse(mode: string, question: string, context: strin
         data: {
           sessionId,
           type: "AI_CHAT",
-          payload: toJsonString({ question, response: fullResponse, mocked: true, mode, model: "mock", tokensUsed: 0, responseTimeMs }),
+          payload: { question, response: fullResponse, mocked: true, mode, model: "mock", tokensUsed: 0, responseTimeMs },
         },
       });
 
