@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../lib/prisma";
-import { toJsonString } from "../../../../lib/json";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -112,7 +111,7 @@ Complete the code at the cursor position:`;
     data: {
       sessionId: session.id,
       type: "AI_INLINE_SUGGEST",
-      payload: toJsonString({
+      payload: {
         filePath,
         cursorLine,
         cursorColumn,
@@ -120,7 +119,7 @@ Complete the code at the cursor position:`;
         model,
         tokensUsed,
         responseTimeMs,
-      }),
+      },
     },
   });
 

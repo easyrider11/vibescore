@@ -12,7 +12,7 @@ import { Server } from "@hocuspocus/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const PORT = Number(process.env.COLLAB_PORT) || 3002;
+const PORT = Number(process.env.PORT || process.env.COLLAB_PORT) || 3002;
 
 const server = new Server({
   port: PORT,
@@ -112,7 +112,7 @@ const server = new Server({
         data: {
           sessionId: user.user.sessionId,
           type: "COLLAB_DISCONNECT",
-          payload: JSON.stringify({ time: new Date().toISOString() }),
+          payload: { time: new Date().toISOString() },
         },
       });
     }
@@ -120,5 +120,5 @@ const server = new Server({
 });
 
 server.listen().then(() => {
-  console.log(`Collaboration server running on ws://localhost:${PORT}`);
+  console.log(`Collaboration server running on port ${PORT}`);
 });

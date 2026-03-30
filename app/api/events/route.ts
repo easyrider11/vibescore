@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
-import { toJsonString } from "../../../lib/json";
-
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const token = body.token?.toString();
@@ -13,6 +11,6 @@ export async function POST(req: NextRequest) {
   const session = await prisma.interviewSession.findUnique({ where: { publicToken: token } });
   if (!session) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.event.create({ data: { sessionId: session.id, type, payload: toJsonString(payload) } });
+  await prisma.event.create({ data: { sessionId: session.id, type, payload } });
   return NextResponse.json({ status: "ok" });
 }
