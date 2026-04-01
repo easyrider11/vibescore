@@ -27,7 +27,7 @@ export default async function SessionsPage() {
     createdAt: s.createdAt.toISOString(),
     startedAt: s.startedAt?.toISOString() || null,
     endedAt: s.endedAt?.toISOString() || null,
-    score: s.rubricScores.length > 0 ? s.rubricScores[0].scores : null,
+    score: s.rubricScores.length > 0 ? JSON.stringify(s.rubricScores[0].scores) : null,
     decision: s.rubricScores.length > 0 ? s.rubricScores[0].decision : null,
   }));
 
