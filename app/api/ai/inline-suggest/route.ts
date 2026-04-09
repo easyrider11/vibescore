@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../lib/prisma";
+import { getAIConfig, getAnthropicClient } from "../../../../lib/ai";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const sessionId = body.sessionId?.toString();
   const token = body.token?.toString();
   const filePath = body.filePath?.toString() ?? "";
   const fileContent = body.fileContent?.toString() ?? "";
@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
   }
 
   const startMs = Date.now();
+  const config = getAIConfig();
 
-  // Split content into lines and build context around cursor
   const lines = fileContent.split("\n");
   const beforeCursor = lines.slice(0, cursorLine).join("\n");
   const afterCursor = lines.slice(cursorLine).join("\n");
@@ -66,39 +66,27 @@ Complete the code at the cursor position:`;
   let model = "mock";
   let tokensUsed = 0;
 
-  if (process.env.AI_MODE === "real" && process.env.ANTHROPIC_API_KEY) {
-    // Use Haiku for speed
+  if (config.isReal) {
     const selectedModel = "claude-haiku-4-5-20251001";
     try {
-      const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          max_tokens: 150,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
-          temperature: 0.2,
-        }),
+      const client = getAnthropicClient();
+      const message = await client.messages.create({
+        model: selectedModel,
+        max_tokens: 150,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+        temperature: 0.2,
       });
 
-      if (apiRes.ok) {
-        const data = await apiRes.json();
-        completion = data.content?.[0]?.text ?? "";
-        model = selectedModel;
-        tokensUsed =
-          (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0);
-      }
+      const textBlock = message.content.find((b) => b.type === "text");
+      completion = textBlock && "text" in textBlock ? textBlock.text : "";
+      model = selectedModel;
+      tokensUsed = (message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0);
     } catch {
       // Fall through to mock
     }
   }
 
-  // Mock fallback: generate contextual completions
   if (!completion) {
     completion = generateMockCompletion(filePath, prefix, currentLine);
     model = "mock";
@@ -106,7 +94,6 @@ Complete the code at the cursor position:`;
 
   const responseTimeMs = Date.now() - startMs;
 
-  // Log the suggestion event
   await prisma.event.create({
     data: {
       sessionId: session.id,
@@ -136,7 +123,6 @@ function generateMockCompletion(
 ): string {
   const trimmed = prefix.trim();
 
-  // Context-aware mock completions
   if (trimmed.startsWith("function ") || trimmed.startsWith("const ")) {
     if (trimmed.includes("(") && !trimmed.includes(")"))
       return ") {\n  \n}";
@@ -167,7 +153,6 @@ function generateMockCompletion(
   }
 
   if (trimmed === "" && currentLine.trim() === "") {
-    // Empty line — suggest a comment or newline
     return "";
   }
 

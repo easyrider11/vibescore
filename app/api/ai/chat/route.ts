@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { parseJsonOr } from "../../../../lib/json";
+import { getAIConfig, getAnthropicClient } from "../../../../lib/ai";
 
 const fallbackByMode: Record<string, string[]> = {
   summary: [
@@ -36,7 +37,6 @@ export async function POST(req: NextRequest) {
   const session = await prisma.interviewSession.findUnique({ where: { publicToken: token }, include: { scenario: true } });
   if (!session) return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
 
-  // Check session is active
   if (session.status === "completed" || session.status === "cancelled") {
     return new Response(JSON.stringify({ error: "Session ended" }), { status: 403, headers: { "Content-Type": "application/json" } });
   }
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   const startMs = Date.now();
+  const config = getAIConfig();
 
   const systemPrompt = `You are an AI coding assistant embedded in a technical interview on Buildscore.
 You are helping the candidate understand and work with the following codebase.
@@ -69,139 +70,97 @@ ${context}
 
 Mode: ${mode}`;
 
-  // ─── Streaming mode (real API) ───
-  if (stream && process.env.AI_MODE === "real" && process.env.ANTHROPIC_API_KEY) {
-    const selectedModel = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
-    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: selectedModel,
+  // ─── Streaming mode (real API via SDK) ───
+  if (stream && config.isReal) {
+    try {
+      const client = getAnthropicClient();
+      const sdkStream = client.messages.stream({
+        model: config.model,
         max_tokens: 2048,
         system: systemPrompt,
         messages: [{ role: "user", content: question }],
         temperature: 0.3,
-        stream: true,
-      }),
-    });
+      });
 
-    if (!apiRes.ok || !apiRes.body) {
-      // Fallback to mock on API error
-      return mockStreamResponse(mode, question, context, session.id, startMs);
-    }
+      let fullResponse = "";
+      let inputTokens = 0;
+      let outputTokens = 0;
 
-    // Transform Anthropic SSE stream into our own SSE stream
-    let fullResponse = "";
-    let inputTokens = 0;
-    let outputTokens = 0;
-
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        const reader = apiRes.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop() || "";
-
-            for (const line of lines) {
-              if (!line.startsWith("data: ")) continue;
-              const data = line.slice(6).trim();
-              if (data === "[DONE]") continue;
-
-              try {
-                const event = JSON.parse(data);
-                if (event.type === "content_block_delta" && event.delta?.text) {
-                  fullResponse += event.delta.text;
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "delta", text: event.delta.text })}\n\n`));
-                } else if (event.type === "message_delta" && event.usage) {
-                  outputTokens = event.usage.output_tokens || 0;
-                } else if (event.type === "message_start" && event.message?.usage) {
-                  inputTokens = event.message.usage.input_tokens || 0;
-                }
-              } catch {
-                // skip malformed JSON
+      const encoder = new TextEncoder();
+      const readable = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const event of sdkStream) {
+              if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+                fullResponse += event.delta.text;
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "delta", text: event.delta.text })}\n\n`));
+              } else if (event.type === "message_start" && event.message?.usage) {
+                inputTokens = event.message.usage.input_tokens || 0;
+              } else if (event.type === "message_delta") {
+                outputTokens = (event as unknown as { usage?: { output_tokens?: number } }).usage?.output_tokens || 0;
               }
             }
+          } catch {
+            // Stream error — send what we have
           }
-        } catch (err) {
-          // Stream error — send what we have
-        }
 
-        const responseTimeMs = Date.now() - startMs;
-        const tokensUsed = inputTokens + outputTokens;
+          const responseTimeMs = Date.now() - startMs;
+          const tokensUsed = inputTokens + outputTokens;
 
-        // Log to database
-        await prisma.event.create({
-          data: {
-            sessionId: session.id,
-            type: "AI_CHAT",
-            payload: { question, response: fullResponse, mocked: false, mode, model: selectedModel, tokensUsed, responseTimeMs },
-          },
-        });
+          await prisma.event.create({
+            data: {
+              sessionId: session.id,
+              type: "AI_CHAT",
+              payload: { question, response: fullResponse, mocked: false, mode, model: config.model, tokensUsed, responseTimeMs },
+            },
+          });
 
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", tokensUsed, responseTimeMs, model: selectedModel })}\n\n`));
-        controller.close();
-      },
-    });
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done", tokensUsed, responseTimeMs, model: config.model })}\n\n`));
+          controller.close();
+        },
+      });
 
-    return new Response(readable, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
-      },
-    });
+      return new Response(readable, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    } catch {
+      // Fallback to mock on SDK error
+      return mockStreamResponse(mode, question, context, session.id, startMs);
+    }
   }
 
-  // ─── Streaming mode (mock) — simulate streaming with mock data ───
+  // ─── Streaming mode (mock) ───
   if (stream) {
     return mockStreamResponse(mode, question, context, session.id, startMs);
   }
 
-  // ─── Non-streaming mode (backwards compatible) ───
+  // ─── Non-streaming mode ───
   let response = "";
   let mocked = true;
   let model = "mock";
   let tokensUsed = 0;
 
-  if (process.env.AI_MODE === "real" && process.env.ANTHROPIC_API_KEY) {
-    const selectedModel = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: selectedModel,
+  if (config.isReal) {
+    try {
+      const client = getAnthropicClient();
+      const message = await client.messages.create({
+        model: config.model,
         max_tokens: 2048,
         system: systemPrompt,
         messages: [{ role: "user", content: question }],
         temperature: 0.3,
-      }),
-    });
+      });
 
-    if (apiRes.ok) {
-      const data = await apiRes.json();
-      response = data.content?.[0]?.text ?? "";
-      model = selectedModel;
-      tokensUsed = (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0);
+      const textBlock = message.content.find((b) => b.type === "text");
+      response = textBlock && "text" in textBlock ? textBlock.text : "";
+      model = config.model;
+      tokensUsed = (message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0);
       mocked = false;
-    } else {
+    } catch {
       const fallback = fallbackByMode[mode] || fallbackByMode.summary;
       response = fallback[(question.length + context.length) % fallback.length];
     }
@@ -229,14 +188,14 @@ Mode: ${mode}`;
 async function mockStreamResponse(mode: string, question: string, context: string, sessionId: string, startMs: number) {
   const fallback = fallbackByMode[mode] || fallbackByMode.summary;
   const fullResponse = fallback[(question.length + context.length) % fallback.length];
-  const words = fullResponse.split(/(\s+)/); // keep whitespace
+  const words = fullResponse.split(/(\s+)/);
 
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
       for (const word of words) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "delta", text: word })}\n\n`));
-        await new Promise((r) => setTimeout(r, 15 + Math.random() * 25)); // simulate typing
+        await new Promise((r) => setTimeout(r, 15 + Math.random() * 25));
       }
 
       const responseTimeMs = Date.now() - startMs;
