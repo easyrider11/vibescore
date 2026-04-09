@@ -4,29 +4,45 @@ import { useState } from "react";
 
 export function RubricForm({ sessionId }: { sessionId: string }) {
   const [decision, setDecision] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [sliderValues, setSliderValues] = useState<Record<string, number>>({
+    repo_understanding: 3,
+    requirement_clarity: 3,
+    delivery_quality: 3,
+    architecture_tradeoffs: 3,
+    ai_usage_quality: 3,
+  });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    const scores = {
-      repo_understanding: Number(data.get("repo_understanding")),
-      requirement_clarity: Number(data.get("requirement_clarity")),
-      delivery_quality: Number(data.get("delivery_quality")),
-      architecture_tradeoffs: Number(data.get("architecture_tradeoffs")),
-      ai_usage_quality: Number(data.get("ai_usage_quality")),
-    };
-    await fetch("/api/rubric", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId,
-        scores,
-        comments: data.get("comments"),
-        decision,
-      }),
-    });
-    window.location.reload();
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const form = e.currentTarget;
+      const data = new FormData(form);
+      const res = await fetch("/api/rubric", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          scores: sliderValues,
+          comments: data.get("comments"),
+          decision,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to submit evaluation");
+      }
+
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit evaluation. Please try again.");
+      setSubmitting(false);
+    }
   }
 
   const decisions = [
@@ -36,23 +52,39 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
     { value: "strong_no_hire", label: "Strong No Hire", color: "bg-red-50 text-red-700 border-red-300" },
   ];
 
+  const rubricDimensions = [
+    ["repo_understanding", "Repo Understanding", "How well did they navigate and understand the codebase?"],
+    ["requirement_clarity", "Requirement Clarification", "Did they ask good questions and document assumptions?"],
+    ["delivery_quality", "Delivery Quality", "Is the code correct, clean, and well-structured?"],
+    ["architecture_tradeoffs", "Architecture Tradeoffs", "Did they consider scalability, maintainability, edge cases?"],
+    ["ai_usage_quality", "AI Usage Quality", "How effectively did they leverage the AI copilot?"],
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* Rubric scores */}
       <div className="grid gap-3 md:grid-cols-2">
-        {[
-          ["repo_understanding", "Repo Understanding", "How well did they navigate and understand the codebase?"],
-          ["requirement_clarity", "Requirement Clarification", "Did they ask good questions and document assumptions?"],
-          ["delivery_quality", "Delivery Quality", "Is the code correct, clean, and well-structured?"],
-          ["architecture_tradeoffs", "Architecture Tradeoffs", "Did they consider scalability, maintainability, edge cases?"],
-          ["ai_usage_quality", "AI Usage Quality", "How effectively did they leverage the AI copilot?"],
-        ].map(([key, label, desc]) => (
+        {rubricDimensions.map(([key, label, desc]) => (
           <label key={key} className="text-sm text-slate-600">
             <span className="font-medium text-slate-800">{label}</span>
             <p className="text-xs text-slate-400 mt-0.5 mb-1">{desc}</p>
             <div className="flex items-center gap-2">
-              <input name={key} type="range" min={1} max={5} defaultValue={3} className="flex-1" />
-              <span className="text-xs font-mono text-slate-500 w-4 text-center">3</span>
+              <input
+                name={key}
+                type="range"
+                min={1}
+                max={5}
+                value={sliderValues[key]}
+                onChange={(e) => setSliderValues((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
+                className="flex-1"
+              />
+              <span className="text-xs font-mono text-slate-500 w-4 text-center">{sliderValues[key]}</span>
             </div>
           </label>
         ))}
@@ -88,8 +120,12 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
         />
       </label>
 
-      <button className="rounded-lg bg-ink px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink/90 transition-colors" type="submit">
-        Submit Evaluation
+      <button
+        className="rounded-lg bg-ink px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink/90 transition-colors disabled:opacity-50"
+        type="submit"
+        disabled={submitting}
+      >
+        {submitting ? "Submitting..." : "Submit Evaluation"}
       </button>
     </form>
   );

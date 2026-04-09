@@ -27,8 +27,18 @@ model SessionToken {
   id        String   @id @default(uuid())
   userId    String
   token     String   @unique
+  expiresAt DateTime @default(dbgenerated("now() + interval '30 days'"))
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model MagicLinkToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
 }
 
 model Scenario {
