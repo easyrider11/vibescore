@@ -20,6 +20,7 @@ export default function NewSessionWizard() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const [inviteStatus, setInviteStatus] = useState<{ sent: boolean; error?: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Form state
@@ -28,6 +29,7 @@ export default function NewSessionWizard() {
   const [candidateEmail, setCandidateEmail] = useState("");
   const [position, setPosition] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(45);
+  const [sendInvite, setSendInvite] = useState(true);
 
   useEffect(() => {
     fetch("/api/scenarios")
@@ -50,11 +52,13 @@ export default function NewSessionWizard() {
         candidateEmail,
         position,
         durationMinutes,
+        sendInvite,
       }),
     });
     if (res.ok) {
       const data = await res.json();
       setCreatedToken(data.publicToken);
+      setInviteStatus(data.inviteEmail ?? null);
     }
     setCreating(false);
   }
@@ -84,8 +88,21 @@ export default function NewSessionWizard() {
             </svg>
           </div>
           <h2 className="font-display text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Session Created</h2>
-          <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-            Send this link to <strong>{candidateName}</strong> to start the interview.
+          {inviteStatus?.sent ? (
+            <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+              Invite sent to <strong style={{ color: "var(--accent-green)" }}>{candidateEmail}</strong>.
+            </p>
+          ) : inviteStatus?.error ? (
+            <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+              <span style={{ color: "var(--status-error)" }}>Email failed:</span> {inviteStatus.error}. Share the link manually below.
+            </p>
+          ) : (
+            <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+              Send this link to <strong>{candidateName}</strong> to start the interview.
+            </p>
+          )}
+          <p className="text-xs mb-6" style={{ color: "var(--text-tertiary)" }}>
+            You can also copy the link below.
           </p>
           <div className="flex items-center gap-2 rounded-lg p-3 mb-4" style={{ background: "var(--bg-primary)", border: "1px solid var(--border-default)" }}>
             <code className="flex-1 text-xs truncate" style={{ color: "var(--accent-cyan)" }}>{url}</code>
@@ -108,12 +125,14 @@ export default function NewSessionWizard() {
             <button
               onClick={() => {
                 setCreatedToken(null);
+                setInviteStatus(null);
                 setStep(0);
                 setSelectedScenario(null);
                 setCandidateName("");
                 setCandidateEmail("");
                 setPosition("");
                 setDurationMinutes(45);
+                setSendInvite(true);
               }}
               className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: "var(--accent-blue)" }}
@@ -267,6 +286,20 @@ export default function NewSessionWizard() {
             <div className="text-xs font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>Template</div>
             <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{selectedScenario?.title}</div>
           </div>
+          <label className="flex items-start gap-3 rounded-lg p-3 cursor-pointer" style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}>
+            <input
+              type="checkbox"
+              checked={sendInvite}
+              onChange={(e) => setSendInvite(e.target.checked)}
+              className="mt-0.5 accent-[var(--accent-blue)]"
+            />
+            <div>
+              <div className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Email invite to candidate</div>
+              <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                Automatically send {candidateEmail || "the candidate"} a link to start the interview.
+              </div>
+            </div>
+          </label>
         </div>
       )}
 
@@ -280,6 +313,7 @@ export default function NewSessionWizard() {
             <Row label="Email" value={candidateEmail} />
             {position && <Row label="Position" value={position} />}
             <Row label="Duration" value={`${durationMinutes} minutes`} />
+            <Row label="Email invite" value={sendInvite ? "Will be sent" : "Skipped"} />
           </div>
         </div>
       )}
