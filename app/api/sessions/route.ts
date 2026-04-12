@@ -3,6 +3,14 @@ import crypto from "crypto";
 import { getCurrentUser } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
 import { ensureWorkspace } from "../../../lib/workspace";
+import { sendCandidateInviteEmail } from "../../../lib/email";
+
+function getAppUrl(req: NextRequest): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  const proto = req.headers.get("x-forwarded-proto") || "http";
+  const host = req.headers.get("host") || "localhost:3000";
+  return `${proto}://${host}`;
+}
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
@@ -19,6 +27,7 @@ export async function POST(req: NextRequest) {
   const candidateEmail = body.candidateEmail?.toString() || "";
   const position = body.position?.toString() || "";
   const durationMinutes = Number(body.durationMinutes) || scenario.timeLimitMin || 45;
+  const sendInvite = body.sendInvite !== false; // default true
 
   const publicToken = crypto.randomBytes(12).toString("hex");
   const session = await prisma.interviewSession.create({
@@ -36,5 +45,18 @@ export async function POST(req: NextRequest) {
 
   await ensureWorkspace(session.id, scenario.slug);
 
-  return NextResponse.json(session);
+  let inviteEmail: { sent: boolean; error?: string } | null = null;
+  if (sendInvite && candidateEmail && candidateEmail.includes("@")) {
+    const sessionUrl = `${getAppUrl(req)}/s/${publicToken}`;
+    inviteEmail = await sendCandidateInviteEmail({
+      to: candidateEmail,
+      candidateName,
+      scenarioTitle: scenario.title,
+      sessionUrl,
+      durationMinutes,
+      recruiterEmail: user.email,
+    });
+  }
+
+  return NextResponse.json({ ...session, inviteEmail });
 }

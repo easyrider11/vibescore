@@ -7,22 +7,26 @@
 :root {
   color-scheme: light;
 
-  /* Backgrounds */
+  /* ── Surface hierarchy ── */
   --bg-primary: #0e1117;
   --bg-surface: #161b22;
   --bg-surface-alt: #1c2230;
+  --bg-surface-raised: #222a38;
   --bg-hover: rgba(255,255,255,0.03);
+  --bg-inset: #0a0d12;
 
-  /* Borders */
+  /* ── Borders ── */
   --border-default: #2a3142;
+  --border-subtle: #1e2535;
   --border-focus: #3b82f6;
 
-  /* Text */
+  /* ── Text ── */
   --text-primary: #e6edf3;
-  --text-secondary: #7d8590;
+  --text-secondary: #8b949e;
   --text-tertiary: #484f58;
+  --text-inverse: #0e1117;
 
-  /* Accent */
+  /* ── Accent palette ── */
   --accent-blue: #3b82f6;
   --accent-purple: #a371f7;
   --accent-green: #3fb950;
@@ -31,27 +35,129 @@
   --accent-cyan: #58a6ff;
   --accent-pink: #f778ba;
 
-  /* Semantic */
+  /* ── Semantic status ── */
   --status-active: #3fb950;
   --status-warning: #d29922;
   --status-error: #f85149;
   --status-info: #58a6ff;
+  --status-pending: #3b82f6;
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
 body {
-  @apply bg-mist text-ink font-body;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dashboard cards (light pages) */
+/* ── Dashboard card ─────────────────────────────────────── */
 .card {
-  @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
 }
+
+.card-raised {
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* ── Chip / badge ─────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chip-blue   { background: rgba(59,130,246,0.12); color: var(--accent-blue); }
+.chip-green  { background: rgba(63,185,80,0.12);  color: var(--accent-green); }
+.chip-orange { background: rgba(210,153,34,0.12);  color: var(--accent-orange); }
+.chip-red    { background: rgba(248,81,73,0.12);   color: var(--accent-red); }
+.chip-purple { background: rgba(163,113,247,0.12); color: var(--accent-purple); }
+.chip-cyan   { background: rgba(88,166,255,0.12);  color: var(--accent-cyan); }
+.chip-muted  { background: var(--bg-surface-alt);  color: var(--text-secondary); }
 
 .badge {
-  @apply inline-flex items-center gap-2 rounded-full bg-ink px-3 py-1 text-xs font-semibold text-white;
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold;
+  background: var(--accent-blue);
+  color: #fff;
 }
 
-/* IDE-specific styles */
+/* ── Button hierarchy ─────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+  border: 1px solid transparent;
+}
+.btn-primary:hover:not(:disabled) { background: #2563eb; }
+
+.btn-success {
+  background: var(--accent-green);
+  color: var(--text-inverse);
+  border: 1px solid transparent;
+}
+.btn-success:hover:not(:disabled) { background: #2ea043; }
+
+.btn-danger {
+  background: var(--accent-red);
+  color: #fff;
+  border: 1px solid transparent;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+.btn-ghost:hover:not(:disabled) { background: var(--bg-surface-alt); color: var(--text-primary); }
+
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-xs { padding: 2px 8px; font-size: 11px; }
+
+/* ── Technical inset panes (code, tests, AI, diff) ───── */
+.pane-inset {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.pane-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+/* ── IDE-specific styles ─────────────────────────────── */
 .ide-panel {
   background: var(--bg-surface);
   border-color: var(--border-default);
@@ -68,8 +174,8 @@ body {
 /* Code block in AI responses */
 .ai-code-block {
   @apply relative rounded-md overflow-hidden;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-default);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
 }
 
 .ai-code-block pre {
@@ -81,10 +187,10 @@ body {
   @apply flex items-center justify-between px-3 py-1.5 text-[10px] font-mono;
   background: var(--bg-surface-alt);
   color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-/* Context pills */
+/* ── Context pills ────────────────────────────────────── */
 .context-pill {
   @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium cursor-pointer transition-colors;
   background: rgba(59, 130, 246, 0.1);
@@ -101,7 +207,7 @@ body {
   border-color: var(--accent-blue);
 }
 
-/* Status bar */
+/* ── Status bar ───────────────────────────────────────── */
 .status-bar {
   @apply flex items-center justify-between px-3 py-1 text-[10px] font-mono;
   background: var(--bg-surface);
@@ -109,7 +215,7 @@ body {
   border-top: 1px solid var(--border-default);
 }
 
-/* Presence avatar */
+/* ── Presence avatar ──────────────────────────────────── */
 .presence-avatar {
   @apply relative inline-flex items-center justify-center rounded-full text-[9px] font-semibold;
   width: 26px;
@@ -124,7 +230,53 @@ body {
   border: 2px solid var(--bg-primary);
 }
 
-/* Scrollbar for IDE panels */
+/* ── Section header ───────────────────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.section-header h2,
+.section-header h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.section-header .section-count {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-tertiary);
+}
+
+/* ── Evidence block (reviewer) ────────────────────────── */
+.evidence-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.evidence-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-default);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.evidence-block-body {
+  padding: 16px;
+}
+
+/* ── Scrollbar for IDE panels ─────────────────────────── */
 .ide-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -141,4 +293,64 @@ body {
 
 .ide-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
+}
+
+/* ── Utility: sticky rubric sidebar ───────────────────── */
+@media (min-width: 1024px) {
+  .sticky-rubric {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+  }
+}
+
+/* ── Session row density ──────────────────────────────── */
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-default);
+  transition: background 0.1s ease;
+  cursor: pointer;
+}
+
+.session-row:hover {
+  background: var(--bg-hover);
+}
+
+.session-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Action status inline ─────────────────────────────── */
+.action-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.action-status.success { background: rgba(63,185,80,0.12); color: var(--accent-green); }
+.action-status.error   { background: rgba(248,81,73,0.12); color: var(--accent-red); }
+.action-status.info    { background: rgba(59,130,246,0.12); color: var(--accent-blue); }
+
+/* ── Light-theme overrides for login / landing ────────── */
+.light-surface {
+  --bg-primary: #f8f9fa;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #f0f2f5;
+  --border-default: #e1e5eb;
+  --text-primary: #0e1117;
+  --text-secondary: #656d76;
+  --text-tertiary: #8b949e;
 }

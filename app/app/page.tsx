@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentUser } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { SessionsTable } from "../../components/SessionsTable";
+import { parseJsonOr } from "../../lib/json";
 
 export default async function SessionsPage() {
   const user = await getCurrentUser();
@@ -13,6 +14,9 @@ export default async function SessionsPage() {
     include: { scenario: true, rubricScores: true },
     orderBy: { createdAt: "desc" },
   });
+
+  const activeCount = sessions.filter(s => s.status === "active").length;
+  const pendingCount = sessions.filter(s => s.status === "pending").length;
 
   const sessionsData = sessions.map((s) => ({
     id: s.id,
@@ -32,26 +36,85 @@ export default async function SessionsPage() {
   }));
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-6 lg:p-8 space-y-8">
+      {/* Header band */}
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          <h1 className="font-display text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
             Sessions
           </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-            Manage interview sessions and review candidates
-          </p>
+          <div className="flex items-center gap-3 mt-1.5">
+            <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+              {sessions.length} total
+            </span>
+            {activeCount > 0 && (
+              <span className="chip chip-green">{activeCount} active</span>
+            )}
+            {pendingCount > 0 && (
+              <span className="chip chip-blue">{pendingCount} pending</span>
+            )}
+          </div>
         </div>
-        <Link
-          href="/app/new-session"
-          className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: "var(--accent-blue)" }}
-        >
-          + New Session
+        <Link href="/app/new-session" className="btn btn-primary">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          New Session
         </Link>
       </div>
 
+      {/* Sessions table — primary content */}
       <SessionsTable sessions={sessionsData} />
+
+      {/* Scenario library — secondary */}
+      <section>
+        <div className="section-header">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>Scenario Library</h2>
+          <span className="section-count">{scenarios.length}</span>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {scenarios.map((scenario) => {
+            const aiPolicy = parseJsonOr<{ allowedModes?: string[] }>(scenario.aiPolicy, {});
+            const aiModes = aiPolicy.allowedModes || [];
+            const scenarioSessions = sessions.filter(s => s.scenarioId === scenario.id).length;
+
+            return (
+              <div key={scenario.id} className="card p-4 flex flex-col gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+                    {scenario.title}
+                  </h3>
+                  <p className="text-xs leading-relaxed line-clamp-2" style={{ color: "var(--text-secondary)" }}>
+                    {scenario.description}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {scenario.timeLimitMin && (
+                    <span className="chip chip-muted">
+                      <svg className="w-3 h-3 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {scenario.timeLimitMin}m
+                    </span>
+                  )}
+                  {aiModes.map((mode) => (
+                    <span key={mode} className="chip chip-cyan">{mode}</span>
+                  ))}
+                  {scenarioSessions > 0 && (
+                    <span className="chip chip-muted">{scenarioSessions} used</span>
+                  )}
+                </div>
+
+                <Link href="/app/new-session" className="btn btn-ghost btn-xs mt-auto self-start">
+                  Use Template
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

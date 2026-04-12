@@ -46,10 +46,10 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
   }
 
   const decisions = [
-    { value: "strong_hire", label: "Strong Hire", color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
-    { value: "hire", label: "Hire", color: "bg-green-50 text-green-700 border-green-300" },
-    { value: "no_hire", label: "No Hire", color: "bg-orange-50 text-orange-700 border-orange-300" },
-    { value: "strong_no_hire", label: "Strong No Hire", color: "bg-red-50 text-red-700 border-red-300" },
+    { value: "strong_hire", label: "Strong Hire", chipClass: "chip-green" },
+    { value: "hire", label: "Hire", chipClass: "chip-blue" },
+    { value: "no_hire", label: "No Hire", chipClass: "chip-orange" },
+    { value: "strong_no_hire", label: "Strong No Hire", chipClass: "chip-red" },
   ];
 
   const rubricDimensions = [
@@ -61,19 +61,17 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
+        <div className="action-status error">{error}</div>
       )}
 
       {/* Rubric scores */}
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="space-y-4">
         {rubricDimensions.map(([key, label, desc]) => (
-          <label key={key} className="text-sm text-slate-600">
-            <span className="font-medium text-slate-800">{label}</span>
-            <p className="text-xs text-slate-400 mt-0.5 mb-1">{desc}</p>
+          <div key={key}>
+            <div className="text-xs font-semibold mb-0.5" style={{ color: "var(--text-primary)" }}>{label}</div>
+            <p className="text-[10px] mb-1.5" style={{ color: "var(--text-tertiary)" }}>{desc}</p>
             <div className="flex items-center gap-2">
               <input
                 name={key}
@@ -82,26 +80,27 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
                 max={5}
                 value={sliderValues[key]}
                 onChange={(e) => setSliderValues((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
-                className="flex-1"
+                className="flex-1 accent-[var(--accent-blue)]"
               />
-              <span className="text-xs font-mono text-slate-500 w-4 text-center">{sliderValues[key]}</span>
+              <span className="text-xs font-mono w-4 text-center" style={{ color: "var(--accent-blue)" }}>
+                {sliderValues[key]}
+              </span>
             </div>
-          </label>
+          </div>
         ))}
       </div>
 
       {/* Hire decision */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 mb-2">Decision</h3>
-        <div className="flex gap-2">
+        <h3 className="text-xs font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Decision</h3>
+        <div className="flex flex-wrap gap-2">
           {decisions.map((d) => (
             <button
               key={d.value}
               type="button"
               onClick={() => setDecision(d.value)}
-              className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
-                decision === d.value ? d.color + " ring-2 ring-offset-1" : "border-slate-200 text-slate-400 hover:border-slate-300"
-              }`}
+              className={`chip ${decision === d.value ? d.chipClass : "chip-muted"} cursor-pointer transition-all`}
+              style={decision === d.value ? { outline: "2px solid var(--border-focus)", outlineOffset: "1px" } : {}}
             >
               {d.label}
             </button>
@@ -110,21 +109,24 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
       </div>
 
       {/* Comments */}
-      <label className="block text-sm text-slate-600">
-        <span className="font-medium text-slate-800">Interviewer Notes</span>
+      <div>
+        <label className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
+          Interviewer Notes
+        </label>
         <textarea
           name="comments"
-          rows={4}
-          className="mt-1 w-full rounded-lg border border-slate-200 p-3 text-sm"
+          rows={3}
+          className="mt-1.5 w-full rounded-md p-3 text-xs"
+          style={{
+            background: "var(--bg-inset)",
+            border: "1px solid var(--border-default)",
+            color: "var(--text-primary)",
+          }}
           placeholder="Free-form notes about the candidate's performance..."
         />
-      </label>
+      </div>
 
-      <button
-        className="rounded-lg bg-ink px-6 py-2.5 text-sm font-semibold text-white hover:bg-ink/90 transition-colors disabled:opacity-50"
-        type="submit"
-        disabled={submitting}
-      >
+      <button className="btn btn-primary w-full" type="submit" disabled={submitting}>
         {submitting ? "Submitting..." : "Submit Evaluation"}
       </button>
     </form>

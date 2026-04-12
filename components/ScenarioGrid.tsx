@@ -41,17 +41,15 @@ export function ScenarioGrid({ scenarios }: { scenarios: Scenario[] }) {
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
+        <div className="action-status error">{error}</div>
       )}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {scenarios.map((scenario) => (
-          <div key={scenario.id} className="card p-5 space-y-2">
-            <h3 className="font-display text-lg font-semibold">{scenario.title}</h3>
-            <p className="text-sm text-slate-600">{scenario.description}</p>
+          <div key={scenario.id} className="card p-4 flex flex-col gap-2">
+            <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{scenario.title}</h3>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{scenario.description}</p>
             <button
-              className="mt-3 rounded-md bg-ink px-3 py-2 text-xs font-semibold text-white disabled:opacity-50 transition-colors"
+              className="btn btn-primary btn-xs mt-2 self-start"
               onClick={() => createSession(scenario.id)}
               disabled={creatingId !== null}
             >
