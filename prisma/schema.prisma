@@ -22,9 +22,10 @@ model User {
   role      String   @default("member") // owner, admin, member
   orgId     String?
   createdAt DateTime @default(now())
-  sessions  InterviewSession[]
-  tokens    SessionToken[]
-  org       Organization? @relation(fields: [orgId], references: [id])
+  sessions     InterviewSession[]
+  tokens       SessionToken[]
+  org          Organization? @relation(fields: [orgId], references: [id])
+  sentInvites  TeamInvite[]
 }
 
 model Organization {
@@ -44,6 +45,23 @@ model Organization {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   members              User[]
+  invites              TeamInvite[]
+}
+
+model TeamInvite {
+  id          String    @id @default(uuid())
+  email       String
+  role        String    @default("member")
+  token       String    @unique
+  orgId       String
+  invitedById String
+  acceptedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  org         Organization @relation(fields: [orgId], references: [id])
+  invitedBy   User         @relation(fields: [invitedById], references: [id])
+
+  @@index([email, orgId])
 }
 
 model SessionToken {
