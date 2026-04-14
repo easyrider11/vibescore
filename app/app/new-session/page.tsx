@@ -22,6 +22,7 @@ export default function NewSessionWizard() {
   const [createdToken, setCreatedToken] = useState<string | null>(null);
   const [inviteStatus, setInviteStatus] = useState<{ sent: boolean; error?: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [createError, setCreateError] = useState<{ message: string; code?: string } | null>(null);
 
   // Form state
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
@@ -43,6 +44,7 @@ export default function NewSessionWizard() {
   async function createSession() {
     if (!selectedScenario) return;
     setCreating(true);
+    setCreateError(null);
     const res = await fetch("/api/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -59,6 +61,9 @@ export default function NewSessionWizard() {
       const data = await res.json();
       setCreatedToken(data.publicToken);
       setInviteStatus(data.inviteEmail ?? null);
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setCreateError({ message: body.error || "Failed to create session", code: body.code });
     }
     setCreating(false);
   }
@@ -314,6 +319,26 @@ export default function NewSessionWizard() {
             {position && <Row label="Position" value={position} />}
             <Row label="Duration" value={`${durationMinutes} minutes`} />
             <Row label="Email invite" value={sendInvite ? "Will be sent" : "Skipped"} />
+          </div>
+        </div>
+      )}
+
+      {/* Error banner */}
+      {createError && (
+        <div
+          className="mt-4 rounded-xl p-4 flex items-start gap-3 max-w-md"
+          style={{ background: "rgba(248,81,73,0.08)", border: "1px solid rgba(248,81,73,0.3)" }}
+        >
+          <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--accent-red)" }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+          <div>
+            <p className="text-xs font-medium" style={{ color: "var(--accent-red)" }}>{createError.message}</p>
+            {createError.code === "SESSION_LIMIT_REACHED" && (
+              <a href="/app/billing" className="text-[10px] font-semibold mt-1 inline-block" style={{ color: "var(--accent-blue)" }}>
+                View billing &rarr;
+              </a>
+            )}
           </div>
         </div>
       )}

@@ -3,6 +3,9 @@ import crypto from "crypto";
 import { getCurrentUser } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
 import { ensureWorkspace } from "../../../lib/workspace";
+import { ensureOrg } from "../../../lib/org";
+import { canCreateSession } from "../../../lib/billing";
+import { PLANS, type PlanKey } from "../../../lib/stripe";
 import { sendCandidateInviteEmail } from "../../../lib/email";
 
 function getAppUrl(req: NextRequest): string {
@@ -15,6 +18,21 @@ function getAppUrl(req: NextRequest): string {
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Check billing limits
+  const org = await ensureOrg(user.id);
+  const allowed = await canCreateSession(org.id);
+  if (!allowed) {
+    const plan = (org.plan as PlanKey) || "free";
+    const limit = PLANS[plan]?.sessionsPerMonth ?? 5;
+    return NextResponse.json(
+      {
+        error: `Session limit reached (${limit}/month on ${PLANS[plan]?.name || "Free"} plan). Upgrade to create more sessions.`,
+        code: "SESSION_LIMIT_REACHED",
+      },
+      { status: 403 },
+    );
+  }
 
   const body = await req.json();
   const scenarioId = body.scenarioId?.toString();
