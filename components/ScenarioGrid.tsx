@@ -7,6 +7,8 @@ interface Scenario {
   id: string;
   title: string;
   description: string;
+  timeLimitMin?: number | null;
+  allowedModes?: string[];
 }
 
 export function ScenarioGrid({ scenarios }: { scenarios: Scenario[] }) {
@@ -48,6 +50,16 @@ export function ScenarioGrid({ scenarios }: { scenarios: Scenario[] }) {
           <div key={scenario.id} className="card p-4 flex flex-col gap-2">
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{scenario.title}</h3>
             <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>{scenario.description}</p>
+            {(scenario.timeLimitMin || scenario.allowedModes?.length) ? (
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                {scenario.timeLimitMin ? <span className="chip chip-muted">{scenario.timeLimitMin} min</span> : null}
+                {scenario.allowedModes?.map((mode) => (
+                  <span key={mode} className="chip chip-blue">
+                    {mode}
+                  </span>
+                ))}
+              </div>
+            ) : null}
             <button
               className="btn btn-primary btn-xs mt-2 self-start"
               onClick={() => createSession(scenario.id)}
