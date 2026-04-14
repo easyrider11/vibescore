@@ -621,11 +621,43 @@ export default function CandidateWorkspace() {
     <div className="flex h-screen flex-col overflow-hidden font-body" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
       {/* Session ended overlay */}
       {sessionEnded && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(14,17,23,0.9)" }}>
-          <div className="text-center rounded-xl p-8" style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}>
-            <div className="text-2xl font-display font-semibold mb-2" style={{ color: "var(--text-primary)" }}>Session Ended</div>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              The interview session has ended. Your work has been saved.
+        <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(14,17,23,0.95)" }}>
+          <div className="text-center rounded-xl p-10 max-w-md" style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}>
+            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-5" style={{ background: "rgba(63,185,80,0.15)" }}>
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: "var(--accent-green)" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-display font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+              Interview Complete
+            </h2>
+            <p className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+              Great job! Your work has been saved and submitted for review.
+            </p>
+            <p className="text-xs mb-6" style={{ color: "var(--text-tertiary)" }}>
+              The hiring team will review your session and get back to you.
+              You can safely close this window.
+            </p>
+            <div className="rounded-lg p-4 mb-6 space-y-2" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-default)" }}>
+              <div className="flex justify-between text-xs">
+                <span style={{ color: "var(--text-tertiary)" }}>Scenario</span>
+                <span style={{ color: "var(--text-primary)" }}>{session?.scenario?.title || "—"}</span>
+              </div>
+              {startTime && (
+                <div className="flex justify-between text-xs">
+                  <span style={{ color: "var(--text-tertiary)" }}>Duration</span>
+                  <span style={{ color: "var(--text-primary)" }}>
+                    {Math.round((Date.now() - startTime) / 60000)} min
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-xs">
+                <span style={{ color: "var(--text-tertiary)" }}>Status</span>
+                <span className="font-medium" style={{ color: "var(--accent-green)" }}>Submitted</span>
+              </div>
+            </div>
+            <p className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
+              Powered by Buildscore
             </p>
           </div>
         </div>

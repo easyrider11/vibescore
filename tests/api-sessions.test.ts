@@ -21,6 +21,22 @@ vi.mock("../lib/workspace", () => ({
   ensureWorkspace: vi.fn().mockResolvedValue("/tmp/work"),
 }));
 
+vi.mock("../lib/org", () => ({
+  ensureOrg: vi.fn().mockResolvedValue({ id: "org-1", plan: "free" }),
+}));
+
+vi.mock("../lib/billing", () => ({
+  canCreateSession: vi.fn().mockResolvedValue(true),
+}));
+
+vi.mock("../lib/stripe", () => ({
+  PLANS: {
+    free: { name: "Free", sessionsPerMonth: 5 },
+    pro: { name: "Pro", sessionsPerMonth: 50 },
+    enterprise: { name: "Enterprise", sessionsPerMonth: -1 },
+  },
+}));
+
 vi.mock("../lib/email", () => ({
   sendCandidateInviteEmail: (...args: unknown[]) => mockSendInvite(...args),
 }));
