@@ -63,6 +63,65 @@ export async function sendMagicLinkEmail(to: string, magicUrl: string): Promise<
   return { sent: true };
 }
 
+export async function sendTeamInviteEmail(params: {
+  to: string;
+  orgName: string;
+  inviterEmail: string;
+  inviteUrl: string;
+  role: string;
+}): Promise<{ sent: boolean; error?: string }> {
+  const { to, orgName, inviterEmail, inviteUrl, role } = params;
+  const resend = getResendClient();
+
+  if (!resend) {
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`\n✉️  Team invite for ${to} to ${orgName}:\n${inviteUrl}\n`);
+      return { sent: true };
+    }
+    return { sent: false, error: "Email provider not configured" };
+  }
+
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject: `Join ${orgName} on Buildscore`,
+    html: `
+      <div style="font-family: system-ui, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 20px;">
+        <h1 style="font-size: 22px; font-weight: 600; color: #0d1117; margin-bottom: 12px;">
+          You're invited to join ${orgName}
+        </h1>
+        <p style="color: #656d76; font-size: 14px; line-height: 1.6; margin-bottom: 8px;">
+          ${inviterEmail} has invited you to join <strong>${orgName}</strong> on Buildscore
+          as a <strong>${role}</strong>.
+        </p>
+        <p style="color: #656d76; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+          Click below to accept the invitation. This link expires in 7 days.
+        </p>
+        <a href="${inviteUrl}"
+           style="display: inline-block; background: #0d1117; color: #ffffff; padding: 14px 36px;
+                  border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
+          Accept Invitation
+        </a>
+        <p style="color: #8b949e; font-size: 12px; margin-top: 24px; line-height: 1.6;">
+          Or copy this link: <br>
+          <a href="${inviteUrl}" style="color: #0969da; word-break: break-all;">${inviteUrl}</a>
+        </p>
+        <hr style="border: none; border-top: 1px solid #d0d7de; margin: 24px 0;" />
+        <p style="color: #8b949e; font-size: 11px;">
+          Buildscore — Technical Interviews for the AI Era
+        </p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("Failed to send team invite email:", error);
+    return { sent: false, error: error.message };
+  }
+
+  return { sent: true };
+}
+
 export async function sendCandidateInviteEmail(params: {
   to: string;
   candidateName: string;
