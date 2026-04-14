@@ -77,7 +77,10 @@ async function triggerAutoGrade(sessionId: string) {
 export async function POST(_: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
-  const session = await prisma.interviewSession.findUnique({ where: { publicToken: token } });
+  const session = await prisma.interviewSession.findUnique({
+    where: { publicToken: token },
+    include: { createdBy: { include: { org: true } } },
+  });
   if (!session) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (session.status === "completed" || session.status === "cancelled") {
@@ -89,8 +92,11 @@ export async function POST(_: Request, { params }: { params: Promise<{ token: st
     data: { status: "completed", endedAt: new Date() },
   });
 
-  // Fire-and-forget: auto-grade in background
-  triggerAutoGrade(session.id);
+  // Fire-and-forget: auto-grade in background (if org setting allows)
+  const autoGradeEnabled = session.createdBy?.org?.autoGradeEnabled ?? true;
+  if (autoGradeEnabled) {
+    triggerAutoGrade(session.id);
+  }
 
   return NextResponse.json({ status: "completed" });
 }
