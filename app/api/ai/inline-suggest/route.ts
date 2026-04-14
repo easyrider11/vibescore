@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { getAIConfig, getAnthropicClient } from "../../../../lib/ai";
+import { rateLimit, AI_RATE_LIMIT, rateLimitResponse } from "../../../../lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -16,6 +17,9 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const rl = rateLimit(`ai:${token}`, AI_RATE_LIMIT);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   const session = await prisma.interviewSession.findUnique({
     where: { publicToken: token },

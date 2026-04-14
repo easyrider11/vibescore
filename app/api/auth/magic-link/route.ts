@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createMagicLink } from "../../../../lib/auth";
 import { sendMagicLinkEmail } from "../../../../lib/email";
+import { rateLimit, LOGIN_RATE_LIMIT, getClientId, rateLimitResponse } from "../../../../lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`magic:${getClientId(req)}`, LOGIN_RATE_LIMIT);
+  if (!rl.allowed) return rateLimitResponse(rl);
   const body = await req.json();
   const email = body.email?.toString().trim().toLowerCase();
 

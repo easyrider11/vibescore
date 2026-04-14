@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { parseJsonOr } from "../../../../lib/json";
 import { getAIConfig, getAnthropicClient } from "../../../../lib/ai";
+import { rateLimit, AI_RATE_LIMIT, rateLimitResponse } from "../../../../lib/rate-limit";
 
 const fallbackByMode: Record<string, string[]> = {
   summary: [
@@ -33,6 +34,10 @@ export async function POST(req: NextRequest) {
   if (!token || !question) {
     return new Response(JSON.stringify({ error: "Missing token/question" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
+
+  // Rate limit by session token
+  const rl = rateLimit(`ai:${token}`, AI_RATE_LIMIT);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   const session = await prisma.interviewSession.findUnique({ where: { publicToken: token }, include: { scenario: true } });
   if (!session) return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
