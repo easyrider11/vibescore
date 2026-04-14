@@ -4,6 +4,7 @@ import { getCurrentUser } from "../../../../lib/auth";
 import { prisma } from "../../../../lib/prisma";
 import { RubricForm } from "../../../../components/RubricForm";
 import { DiffViewer } from "../../../../components/DiffViewer";
+import { AIGradePanel } from "../../../../components/AIGradePanel";
 import { parseJsonOr } from "../../../../lib/json";
 
 export default async function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +14,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
 
   const session = await prisma.interviewSession.findFirst({
     where: { id, createdById: user.id },
-    include: { scenario: true, events: true, submissions: true, rubricScores: true },
+    include: { scenario: true, events: true, submissions: true, rubricScores: true, aiGrade: true },
   });
 
   if (!session) {
@@ -284,10 +285,15 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
 
         {/* ── Sticky rubric sidebar (wide) / below (narrow) ── */}
         <div className="w-full lg:w-[360px] shrink-0">
-          <div className="sticky-rubric">
+          <div className="sticky-rubric space-y-4">
+
+            {/* AI Grade panel */}
+            <AIGradePanel sessionId={session.id} aiGrade={session.aiGrade} />
+
+            {/* Manual evaluation */}
             <div className="evidence-block">
               <div className="evidence-block-header">
-                <span>Evaluation</span>
+                <span>Manual Evaluation</span>
                 {session.rubricScores.length > 0 && (
                   <span className="chip chip-green">Scored</span>
                 )}
