@@ -75,6 +75,7 @@ model InterviewSession {
   events          Event[]
   submissions     Submission[]
   rubricScores    RubricScore[]
+  aiGrade         AIGrade?
 }
 
 model Event {
@@ -104,4 +105,17 @@ model RubricScore {
   decision  String           @default("")
   createdAt DateTime         @default(now())
   session   InterviewSession @relation(fields: [sessionId], references: [id])
+}
+
+model AIGrade {
+  id            String           @id @default(uuid())
+  sessionId     String           @unique
+  scores        Json
+  decision      String
+  summary       String
+  strengths     Json
+  improvements  Json
+  model         String           @default("")
+  createdAt     DateTime         @default(now())
+  session       InterviewSession @relation(fields: [sessionId], references: [id])
 }
