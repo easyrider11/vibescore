@@ -3,6 +3,11 @@ import { getCurrentUser } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
 import { ensureOrg, getOrgMembers } from "../../../lib/org";
 import { sendTeamInviteEmail } from "../../../lib/email";
+import {
+  rateLimit,
+  INVITE_RATE_LIMIT,
+  rateLimitResponse,
+} from "../../../lib/rate-limit";
 
 /**
  * GET /api/team — List org members
@@ -35,6 +40,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const rl = rateLimit(`invite:${user.id}`, INVITE_RATE_LIMIT);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
   const org = await ensureOrg(user.id);
 

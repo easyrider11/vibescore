@@ -1,17 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import { z } from "zod";
 import { prisma } from "../../../lib/prisma";
 import { ensureWorkspace, getWorkspacePath, listFiles, safePath } from "../../../lib/workspace";
 import { diffFiles } from "../../../lib/diff";
+import {
+  rateLimit,
+  SUBMIT_RATE_LIMIT,
+  getClientId,
+  rateLimitResponse,
+} from "../../../lib/rate-limit";
 
 const SEED_ROOT = path.join(process.cwd(), "seeds", "scenarios");
 
+const SubmitSchema = z.object({
+  token: z.string().min(1, "Missing token").max(128),
+  clarificationNotes: z.string().max(5000).optional().nullable(),
+});
+
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const token = body.token?.toString();
-  const clarificationNotes = body.clarificationNotes?.toString() ?? null;
-  if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
+  const rl = rateLimit(`submit:${getClientId(req)}`, SUBMIT_RATE_LIMIT);
+  if (!rl.allowed) return rateLimitResponse(rl);
+
+  const raw = await req.json().catch(() => null);
+  const parsed = SubmitSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message || "Invalid input" },
+      { status: 400 },
+    );
+  }
+  const { token, clarificationNotes = null } = parsed.data;
 
   const session = await prisma.interviewSession.findUnique({
     where: { publicToken: token },

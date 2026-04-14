@@ -99,6 +99,18 @@ export const API_RATE_LIMIT: RateLimitConfig = {
   windowMs: 60 * 1000,
 };
 
+/** Team invite: 20 invites per hour per user */
+export const INVITE_RATE_LIMIT: RateLimitConfig = {
+  limit: 20,
+  windowMs: 60 * 60 * 1000,
+};
+
+/** Candidate submission: 30 per hour per token */
+export const SUBMIT_RATE_LIMIT: RateLimitConfig = {
+  limit: 30,
+  windowMs: 60 * 60 * 1000,
+};
+
 // ─── Helpers ───
 
 import { NextRequest, NextResponse } from "next/server";
