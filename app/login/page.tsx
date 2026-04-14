@@ -16,28 +16,45 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
-  const [mode, setMode] = useState<"quick" | "magic">("quick");
+  const [busy, setBusy] = useState<"quick" | "magic" | null>(null);
 
   const errorParam = searchParams.get("error");
   const redirect = searchParams.get("redirect") || "/app";
 
+  const errorMessage = errorParam
+    ? errorParam === "missing_token"
+      ? "Invalid sign-in link."
+      : errorParam === "Link expired"
+        ? "This sign-in link has expired. Please request a new one."
+        : errorParam === "Link already used"
+          ? "This sign-in link has already been used."
+          : errorParam
+    : null;
+
   async function handleQuickLogin() {
-    setStatus("Signing in...");
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (!res.ok) {
-      setStatus("Login failed. Please check your email and try again.");
-      return;
+    if (!email) return;
+    setBusy("quick");
+    setStatus("Signing in…");
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        setStatus("Login failed. Please check your email and try again.");
+        return;
+      }
+      router.push(redirect);
+    } finally {
+      setBusy(null);
     }
-    setStatus("Signed in.");
-    router.push(redirect);
   }
 
   async function handleMagicLink() {
-    setStatus("Sending magic link...");
+    if (!email) return;
+    setBusy("magic");
+    setStatus("Sending magic link…");
     try {
       const res = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -52,81 +69,100 @@ function LoginForm() {
       setStatus("Check your email for a sign-in link. It expires in 15 minutes.");
     } catch {
       setStatus("Failed to send magic link. Please try again.");
+    } finally {
+      setBusy(null);
     }
   }
 
+  const isError = status.toLowerCase().includes("fail");
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-6 px-6 bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      <div className="card p-8 space-y-4">
-        <h1 className="font-display text-3xl font-semibold text-ink">Recruiter sign in</h1>
-        <p className="text-sm text-slate-600">Enter your work email to access your sessions.</p>
-
-        {errorParam && (
-          <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
-            {errorParam === "missing_token" && "Invalid sign-in link."}
-            {errorParam === "Link expired" && "This sign-in link has expired. Please request a new one."}
-            {errorParam === "Link already used" && "This sign-in link has already been used."}
-            {!["missing_token", "Link expired", "Link already used"].includes(errorParam) && errorParam}
-          </div>
-        )}
-
-        <input
-          className="w-full rounded-md border border-slate-200 px-3 py-2"
-          placeholder="you@company.com"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && email && (mode === "quick" ? handleQuickLogin() : handleMagicLink())}
-        />
-
-        {/* Mode tabs */}
-        <div className="flex gap-2 border-b border-slate-200 text-sm">
-          <button
-            className={`px-3 py-1.5 -mb-px border-b-2 transition-colors ${
-              mode === "quick" ? "border-ink text-ink font-medium" : "border-transparent text-slate-400 hover:text-slate-600"
-            }`}
-            onClick={() => setMode("quick")}
-            type="button"
-          >
-            Quick sign in
-          </button>
-          <button
-            className={`px-3 py-1.5 -mb-px border-b-2 transition-colors ${
-              mode === "magic" ? "border-ink text-ink font-medium" : "border-transparent text-slate-400 hover:text-slate-600"
-            }`}
-            onClick={() => setMode("magic")}
-            type="button"
-          >
-            Magic link
-          </button>
+    <main
+      className="flex min-h-screen items-center justify-center px-6 font-body"
+      style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
+    >
+      <div
+        className="w-full max-w-md rounded-[22px] p-8"
+        style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+      >
+        <div
+          className="text-[11px] font-semibold uppercase tracking-[0.24em]"
+          style={{ color: "var(--accent-cyan)" }}
+        >
+          Sign in
         </div>
+        <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight">
+          Welcome back
+        </h1>
+        <p className="mt-2 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
+          Enter your work email to access your sessions.
+        </p>
 
-        {mode === "quick" ? (
-          <div className="space-y-2">
-            <p className="text-xs text-slate-400">Instantly sign in with your email (no password required).</p>
-            <button
-              className="w-full rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink/90 transition-colors disabled:opacity-50"
-              onClick={handleQuickLogin}
-              disabled={!email}
-            >
-              Sign in
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-xs text-slate-400">We'll send a secure sign-in link to your email.</p>
-            <button
-              className="w-full rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-ink/90 transition-colors disabled:opacity-50"
-              onClick={handleMagicLink}
-              disabled={!email}
-            >
-              Send magic link
-            </button>
+        {errorMessage && (
+          <div
+            className="mt-5 rounded-md px-3 py-2 text-sm"
+            style={{
+              background: "rgba(248,81,73,0.08)",
+              border: "1px solid rgba(248,81,73,0.32)",
+              color: "var(--accent-red)",
+            }}
+          >
+            {errorMessage}
           </div>
         )}
 
-        {status && (
-          <p className={`text-xs ${status.includes("failed") || status.includes("Failed") ? "text-red-500" : "text-slate-500"}`}>
+        <label className="mt-6 block">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ color: "var(--text-tertiary)" }}
+          >
+            Work email
+          </span>
+          <input
+            className="mt-2 w-full rounded-md px-3 py-2.5 text-sm outline-none transition-colors focus:border-[var(--border-focus)]"
+            style={{
+              background: "var(--bg-inset)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-primary)",
+            }}
+            placeholder="you@company.com"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleQuickLogin()}
+          />
+        </label>
+
+        <button
+          type="button"
+          className="mt-5 w-full rounded-md px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          style={{ background: "var(--accent-blue)" }}
+          onClick={handleQuickLogin}
+          disabled={!email || busy !== null}
+        >
+          {busy === "quick" ? "Signing in…" : "Sign in"}
+        </button>
+
+        <button
+          type="button"
+          className="mt-2 w-full rounded-md px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50"
+          style={{
+            color: "var(--text-primary)",
+            border: "1px solid var(--border-default)",
+            background: "transparent",
+          }}
+          onClick={handleMagicLink}
+          disabled={!email || busy !== null}
+        >
+          {busy === "magic" ? "Sending…" : "Email me a magic link"}
+        </button>
+
+        {status && !busy && (
+          <p
+            className="mt-4 text-xs leading-5"
+            style={{ color: isError ? "var(--accent-red)" : "var(--text-secondary)" }}
+          >
             {status}
           </p>
         )}
