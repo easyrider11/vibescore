@@ -92,16 +92,35 @@ function toDate(value: Date | string | null | undefined): Date | null {
   return value instanceof Date ? value : new Date(value);
 }
 
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
 function formatTime(value: Date | string | null | undefined): string {
   const d = toDate(value);
   if (!d) return "—";
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return timeFormatter.format(d);
 }
 
 function formatDate(value: Date | string | null | undefined): string {
   const d = toDate(value);
   if (!d) return "—";
-  return d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  return dateFormatter.format(d);
+}
+
+function titleCase(raw: string): string {
+  return raw
+    .toLowerCase()
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 export function SessionReport({ session, variant = "authenticated", shareUrl }: SessionReportProps) {
@@ -211,17 +230,17 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wider"
              style={{ color: "var(--text-tertiary)" }}>
           <span>Session Report</span>
-          <span>·</span>
+          <span aria-hidden="true">·</span>
           <span>{formatDate(session.createdAt)}</span>
           {variant === "public" && (
             <>
-              <span>·</span>
-              <span style={{ color: "var(--accent-cyan)" }}>Shared read-only</span>
+              <span aria-hidden="true">·</span>
+              <span style={{ color: "var(--accent-cyan)" }}>Shared Read-Only</span>
             </>
           )}
         </div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1">
+          <div className="min-w-0 space-y-1">
             <h1 className="font-display text-2xl font-semibold leading-tight"
                 style={{ color: "var(--text-primary)" }}>
               {session.scenario.title}
@@ -234,7 +253,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="chip chip-muted">{session.status}</span>
+            <span className="chip chip-muted">{titleCase(session.status)}</span>
             {durationMin !== null && (
               <span className="chip chip-muted">{durationMin}m spent</span>
             )}
@@ -243,8 +262,66 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </div>
       </header>
 
+      {/* Headline verdict — hero */}
+      {grade && (
+        <section
+          className="relative overflow-hidden rounded-[20px] p-6 lg:p-8"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(59,130,246,0.06), rgba(163,113,247,0.05))",
+            border: "1px solid var(--border-default)",
+          }}
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at top right, rgba(88,166,255,0.08), transparent 40%)",
+            }}
+          />
+          <div className="relative flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 max-w-2xl">
+              <div
+                className="text-[11px] font-semibold uppercase tracking-[0.22em] mb-2"
+                style={{ color: "var(--accent-cyan)" }}
+              >
+                AI Assessment
+              </div>
+              <h2
+                className="font-display text-xl font-semibold leading-snug"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {grade.summary}
+              </h2>
+            </div>
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <span
+                className={`chip ${DECISION_COLORS[grade.decision] || "chip-muted"}`}
+                style={{ fontSize: 12, padding: "4px 12px" }}
+              >
+                {DECISION_LABELS[grade.decision] || grade.decision}
+              </span>
+              {gradeScores && (
+                <div
+                  className="font-mono text-[11px] tabular"
+                  style={{ color: "var(--text-tertiary)" }}
+                >
+                  Avg{" "}
+                  {(
+                    Object.values(gradeScores).reduce((a, b) => a + b, 0) /
+                    Math.max(Object.values(gradeScores).length, 1)
+                  ).toFixed(1)}
+                  /5
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* KPI strip */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3" data-tabular>
         {[
           { label: "Events", value: sortedEvents.length },
           { label: "AI Queries", value: aiEvents.length },
@@ -261,7 +338,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                  background: "var(--bg-surface)",
                  border: "1px solid var(--border-default)",
                }}>
-            <div className="font-mono text-xl font-semibold"
+            <div className="font-mono text-xl font-semibold tabular"
                  style={{ color: "var(--text-primary)" }}>
               {kpi.value}
             </div>
@@ -272,29 +349,22 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         ))}
       </div>
 
-      {/* Headline verdict */}
+      {/* Detailed scoring */}
       {grade && (
         <section className="rounded-[18px] p-6"
                  style={{
                    background: "var(--bg-surface)",
                    border: "1px solid var(--border-default)",
                  }}>
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="mb-4">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider"
                 style={{ color: "var(--text-tertiary)" }}>
-              AI Assessment
+              Rubric Breakdown
             </h2>
-            <span className={`chip ${DECISION_COLORS[grade.decision] || "chip-muted"}`}>
-              {DECISION_LABELS[grade.decision] || grade.decision}
-            </span>
           </div>
-          <p className="text-sm leading-relaxed mb-5"
-             style={{ color: "var(--text-secondary)" }}>
-            {grade.summary}
-          </p>
 
           {gradeScores && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3" data-tabular>
               {Object.entries(RUBRIC_LABELS).map(([key, label]) => {
                 const val = gradeScores[key];
                 if (val === undefined) return null;
@@ -302,7 +372,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                   <div key={key}>
                     <div className="flex justify-between text-xs mb-1">
                       <span style={{ color: "var(--text-secondary)" }}>{label}</span>
-                      <span className="font-mono" style={{ color: "var(--accent-blue)" }}>
+                      <span className="font-mono tabular" style={{ color: "var(--accent-blue)" }}>
                         {val}/5
                       </span>
                     </div>
@@ -441,15 +511,15 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                 return (
                   <li key={event.id}
                       className="flex items-center gap-3 px-4 py-2 text-xs">
-                    <span className={`chip ${chipColor[event.type] || "chip-muted"}`}
+                    <span className={`chip ${chipColor[event.type] || "chip-muted"} shrink-0`}
                           style={{ minWidth: 96, justifyContent: "center" }}>
-                      {event.type.replace(/_/g, " ").toLowerCase()}
+                      {titleCase(event.type.replace(/_/g, " "))}
                     </span>
-                    <span className="font-mono" style={{ color: "var(--text-tertiary)" }}>
+                    <span className="font-mono tabular shrink-0" style={{ color: "var(--text-tertiary)" }}>
                       {formatTime(event.createdAt)}
                     </span>
                     {detail && (
-                      <span className="truncate" style={{ color: "var(--text-secondary)" }}>
+                      <span className="truncate min-w-0" style={{ color: "var(--text-secondary)" }}>
                         {detail}
                       </span>
                     )}
@@ -683,10 +753,13 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
       <footer className="pt-6 text-center text-[11px]"
               style={{ color: "var(--text-tertiary)", borderTop: "1px solid var(--border-default)" }}>
         {variant === "public"
-          ? "Read-only session report · generated by Buildscore"
-          : "Generated by Buildscore"}
+          ? "Read-only session report · generated by "
+          : "Generated by "}
+        <span translate="no" className="font-semibold" style={{ color: "var(--text-secondary)" }}>
+          Buildscore
+        </span>
         {shareUrl && variant === "public" && (
-          <span className="ml-2 font-mono">{shareUrl}</span>
+          <span className="ml-2 font-mono tabular">{shareUrl}</span>
         )}
       </footer>
     </div>

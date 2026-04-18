@@ -5,10 +5,11 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   /* ── Surface hierarchy ── */
   --bg-primary: #0e1117;
+  --bg-canvas: #0e1117;
   --bg-surface: #161b22;
   --bg-surface-alt: #1c2230;
   --bg-surface-raised: #222a38;
@@ -55,6 +56,41 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings balance — prevents ugly widows on display copy. */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* Tabular numerals for KPI/score rows — keeps columns aligned. */
+.font-mono,
+.tabular,
+[data-tabular] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Global focus-visible ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove tap-delay on touch; avoid ugly gray flash. */
+a, button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Honor prefers-reduced-motion system-wide. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Dashboard card ─────────────────────────────────────── */
@@ -107,9 +143,18 @@ body {
   border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 600;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0.5px);
 }
 
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }

@@ -1,8 +1,58 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "../../../lib/prisma";
 import { SessionReport } from "../../../components/SessionReport";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}): Promise<Metadata> {
+  const { token } = await params;
+  const session = await prisma.interviewSession.findUnique({
+    where: { publicReportToken: token },
+    include: { scenario: true, aiGrade: true },
+  });
+
+  if (!session) {
+    return { title: "Report not found" };
+  }
+
+  const who = session.candidateName || "Candidate";
+  const scenario = session.scenario.title;
+  const verdictMap: Record<string, string> = {
+    strong_hire: "Strong Hire",
+    hire: "Hire",
+    no_hire: "No Hire",
+    strong_no_hire: "Strong No Hire",
+  };
+  const verdict = session.aiGrade?.decision
+    ? verdictMap[session.aiGrade.decision] || ""
+    : "";
+
+  const title = `${who} · ${scenario}`;
+  const description = verdict
+    ? `Buildscore session report — ${verdict}. Includes AI usage, timeline, test runs, and evaluator notes.`
+    : `Buildscore session report for ${who}. Includes AI usage, timeline, test runs, and evaluator notes.`;
+
+  return {
+    title,
+    description,
+    robots: { index: false, follow: false }, // public link but not indexed
+    openGraph: {
+      title,
+      description,
+      type: "article",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function PublicReportPage({
   params,

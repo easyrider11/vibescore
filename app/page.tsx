@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { HeroProductPreview } from "../components/marketing/HeroProductPreview";
 import { MarketingCtaBanner } from "../components/marketing/MarketingCtaBanner";
 import { MarketingNav } from "../components/marketing/MarketingNav";
 import { PricingPackageCard } from "../components/marketing/PricingPackageCard";
@@ -53,10 +54,10 @@ export default function LandingPage() {
                   AI-native technical interviews
                 </div>
                 <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold tracking-tight md:text-7xl">
-                  Evaluate real AI-assisted engineering work, not whiteboard performance.
+                  Hire the engineers who build well <em className="not-italic" style={{ color: "var(--accent-cyan)" }}>with AI</em>.
                 </h1>
                 <p className="mt-6 max-w-2xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
-                  Buildscore gives hiring teams a structured way to watch how candidates navigate real code, collaborate with AI, and justify engineering decisions under realistic interview pressure.
+                  <span translate="no">Buildscore</span> replaces whiteboard puzzles with real-codebase sessions, a built-in copilot, and AI-usage analytics — so you can evaluate how candidates actually ship in 2026.
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -85,7 +86,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <SignalPanel />
+              <HeroProductPreview />
             </div>
           </div>
         </section>
@@ -232,89 +233,3 @@ function SectionHeading({
   );
 }
 
-function SignalPanel() {
-  return (
-    <div
-      className="relative overflow-hidden rounded-[28px] p-5 md:p-6"
-      style={{
-        background: "linear-gradient(180deg, rgba(22,27,34,0.96), rgba(14,17,23,0.98))",
-        border: "1px solid rgba(42,49,66,0.8)",
-        boxShadow: "0 28px 90px rgba(0,0,0,0.38)",
-      }}
-    >
-      <div className="flex items-center justify-between pb-4" style={{ borderBottom: "1px solid rgba(42,49,66,0.75)" }}>
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--text-tertiary)" }}>
-            Review surface
-          </div>
-          <div className="mt-1 font-display text-2xl font-semibold tracking-tight">Candidate session evidence</div>
-        </div>
-        <span className="chip chip-blue">Live demo</span>
-      </div>
-
-      <div className="mt-5 grid gap-4">
-        <div className="rounded-[20px] p-4" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-subtle)" }}>
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold">Prompt timeline</div>
-            <span className="chip chip-purple">AI usage</span>
-          </div>
-          <div className="mt-4 space-y-3 text-sm" style={{ color: "var(--text-secondary)" }}>
-            <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px]" style={{ color: "var(--text-tertiary)" }}>
-                08:14
-              </span>
-              <p>Candidate asks for a refactor path, then verifies the proposed data flow before editing.</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px]" style={{ color: "var(--text-tertiary)" }}>
-                12:09
-              </span>
-              <p>Prompt shifts toward test strategy instead of direct code generation, which is preserved for reviewer context.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[20px] p-4" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-subtle)" }}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Code diff</div>
-              <span className="chip chip-green">5 files changed</span>
-            </div>
-            <div className="mt-4 font-mono text-[12px] leading-6" style={{ color: "var(--text-secondary)" }}>
-              <div>
-                <span style={{ color: "var(--accent-red)" }}>-</span> inline inventory check
-              </div>
-              <div>
-                <span style={{ color: "var(--accent-green)" }}>+</span> extracted stock validator
-              </div>
-              <div>
-                <span style={{ color: "var(--accent-green)" }}>+</span> added notifier adapter tests
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[20px] p-4" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-subtle)" }}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Reviewer summary</div>
-              <span className="chip chip-orange">Structured rubric</span>
-            </div>
-            <div className="mt-4 space-y-3 text-sm" style={{ color: "var(--text-secondary)" }}>
-              <div className="flex items-center justify-between">
-                <span>Problem solving</span>
-                <strong style={{ color: "var(--text-primary)" }}>4 / 5</strong>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>AI collaboration</span>
-                <strong style={{ color: "var(--text-primary)" }}>5 / 5</strong>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Code quality</span>
-                <strong style={{ color: "var(--text-primary)" }}>4 / 5</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

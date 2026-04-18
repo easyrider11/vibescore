@@ -192,7 +192,7 @@ export default function TeamPage() {
               </select>
             </div>
             <button className="btn btn-primary text-xs" type="submit" disabled={inviting}>
-              {inviting ? "Sending..." : "Send Invite"}
+              {inviting ? "Sending…" : "Send Invite"}
             </button>
           </div>
         </form>

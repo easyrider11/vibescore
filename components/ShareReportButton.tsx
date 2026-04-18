@@ -70,24 +70,33 @@ export function ShareReportButton({ sessionId, initialToken }: Props) {
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-1.5">
-        <button className="btn btn-ghost btn-sm" onClick={copy} disabled={!shareUrl}>
-          {copied ? "Copied!" : "Copy link"}
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={copy}
+          disabled={!shareUrl}
+          aria-live="polite"
+        >
+          {copied ? "Copied" : "Copy Link"}
         </button>
         <button
+          type="button"
           className="btn btn-ghost btn-sm"
           onClick={() => toggle(false)}
           disabled={loading}
+          aria-label="Revoke public share link"
         >
           {loading ? "…" : "Revoke"}
         </button>
       </div>
-      <code
-        className="text-[10px] font-mono truncate max-w-[260px]"
+      <span
+        className="inline-flex items-center gap-1 max-w-[280px] text-[10px] font-mono tabular truncate"
         style={{ color: "var(--text-tertiary)" }}
         title={shareUrl}
       >
-        {shareUrl}
-      </code>
+        <span aria-hidden="true">🔗</span>
+        <span className="truncate">{shareUrl.replace(/^https?:\/\//, "")}</span>
+      </span>
     </div>
   );
 }

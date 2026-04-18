@@ -5,6 +5,14 @@ import { prisma } from "./prisma";
 const DEMO_COOKIE = "vibe_session";
 const SESSION_EXPIRY_DAYS = 30;
 
+export const DEMO_EMAIL_PREFIX = "demo+";
+export const DEMO_EMAIL_DOMAIN = "buildscore.dev";
+
+export function isDemoUser(email: string | undefined | null): boolean {
+  if (!email) return false;
+  return email.startsWith(DEMO_EMAIL_PREFIX) && email.endsWith(`@${DEMO_EMAIL_DOMAIN}`);
+}
+
 interface CandidateSeed {
   name: string;
   email: string;
@@ -559,4 +567,35 @@ export async function provisionDemoAccount(): Promise<{
   });
 
   return { userId: user.id, orgId: org.id, redirectTo: "/app" };
+}
+
+/**
+ * Wipe demo user artifacts and log them out. Used by the "Exit demo" link.
+ */
+export async function endDemoSession(userId: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || !isDemoUser(user.email)) return;
+
+  // Cascade-ish cleanup — nullable relations + dependent rows.
+  const sessions = await prisma.interviewSession.findMany({
+    where: { createdById: userId },
+    select: { id: true },
+  });
+  const sessionIds = sessions.map((s) => s.id);
+  if (sessionIds.length > 0) {
+    await prisma.event.deleteMany({ where: { sessionId: { in: sessionIds } } });
+    await prisma.submission.deleteMany({ where: { sessionId: { in: sessionIds } } });
+    await prisma.rubricScore.deleteMany({ where: { sessionId: { in: sessionIds } } });
+    await prisma.aIGrade.deleteMany({ where: { sessionId: { in: sessionIds } } });
+    await prisma.interviewSession.deleteMany({ where: { id: { in: sessionIds } } });
+  }
+  await prisma.sessionToken.deleteMany({ where: { userId } });
+  if (user.orgId) {
+    await prisma.user.update({ where: { id: userId }, data: { orgId: null } });
+    await prisma.organization.delete({ where: { id: user.orgId } }).catch(() => {});
+  }
+  await prisma.user.delete({ where: { id: userId } }).catch(() => {});
+
+  const cookieStore = await cookies();
+  cookieStore.set({ name: DEMO_COOKIE, value: "", maxAge: 0, path: "/" });
 }

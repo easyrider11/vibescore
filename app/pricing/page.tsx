@@ -30,10 +30,10 @@ export default function PricingPage() {
               Pricing
             </div>
             <h1 className="mx-auto mt-4 max-w-4xl font-display text-5xl font-semibold tracking-tight md:text-6xl">
-              Packages for every hiring motion, from early validation to enterprise rollout.
+              Priced for teams hiring the engineers who&nbsp;ship&nbsp;with&nbsp;AI.
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
-              Buildscore is priced to support serious buying conversations. Start free if you want to validate the workflow, then move into Pro or Enterprise when hiring volume, security, and rollout complexity increase.
+              <span translate="no">Buildscore</span> replaces whiteboard puzzles with real-codebase sessions, a built-in copilot, and AI-usage analytics. Start free, go Pro when hiring volume grows, add Enterprise when security and rollout matter.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <TryDemoButton label="Try an interactive demo" variant="primary" />

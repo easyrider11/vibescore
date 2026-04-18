@@ -145,10 +145,10 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
                     };
                     return (
                       <div key={event.id} className="flex items-center gap-3 py-1">
-                        <span className={`chip ${typeColor[event.type] || "chip-muted"}`} style={{ minWidth: 90, justifyContent: "center" }}>
-                          {event.type.replace(/_/g, " ").toLowerCase()}
+                        <span className={`chip ${typeColor[event.type] || "chip-muted"} shrink-0`} style={{ minWidth: 90, justifyContent: "center" }}>
+                          {event.type.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
                         </span>
-                        <span className="text-xs font-mono" style={{ color: "var(--text-tertiary)" }}>
+                        <span className="text-xs font-mono tabular" style={{ color: "var(--text-tertiary)" }}>
                           {event.createdAt.toLocaleTimeString()}
                         </span>
                       </div>

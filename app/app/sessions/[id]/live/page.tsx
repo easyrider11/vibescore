@@ -142,7 +142,7 @@ export default function InterviewerLivePage() {
           <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>Live Observation</span>
           <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>|</span>
           <span className="text-xs truncate max-w-[300px]" style={{ color: "var(--text-secondary)" }}>
-            {scenario?.title || "Loading..."}
+            {scenario?.title || "Loading…"}
           </span>
         </div>
         <div className="flex items-center gap-3">

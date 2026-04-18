@@ -103,7 +103,7 @@ export function AIGradePanel({
             {loading ? (
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Analyzing...
+                Analyzing…
               </span>
             ) : (
               "Run AI Assessment"
@@ -213,7 +213,7 @@ export function AIGradePanel({
             onClick={() => runGrade(true)}
             disabled={loading}
           >
-            {loading ? "Re-grading..." : "Re-grade"}
+            {loading ? "Re-grading…" : "Re-grade"}
           </button>
         </div>
       </div>

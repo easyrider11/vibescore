@@ -48,31 +48,38 @@ export function TryDemoButton({
   return (
     <div className={className}>
       <button
+        type="button"
         onClick={start}
         disabled={loading}
-        className="rounded-lg px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
-        style={baseStyle}
+        aria-busy={loading || undefined}
+        aria-live="polite"
+        className="rounded-lg px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
+        style={{ ...baseStyle, outlineColor: "var(--accent-cyan)" }}
       >
         {loading ? (
           <span className="inline-flex items-center gap-2">
             <span
+              aria-hidden="true"
               className="inline-block w-3 h-3 rounded-full border-2 animate-spin"
               style={{
                 borderColor: "rgba(255,255,255,0.35)",
                 borderTopColor: variant === "primary" ? "white" : "var(--text-primary)",
               }}
             />
-            Setting up your workspace…
+            Setting Up Your Workspace…
           </span>
         ) : (
           label
         )}
       </button>
-      {error && (
-        <p className="mt-2 text-xs" style={{ color: "var(--status-error)" }}>
-          {error}
-        </p>
-      )}
+      <p
+        role="status"
+        aria-live="polite"
+        className="mt-2 text-xs"
+        style={{ color: "var(--status-error)", minHeight: error ? undefined : 0 }}
+      >
+        {error}
+      </p>
     </div>
   );
 }

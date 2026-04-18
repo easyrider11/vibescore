@@ -117,7 +117,7 @@ describe("SessionReport", () => {
 
   it("marks the public variant read-only", () => {
     const html = renderToStaticMarkup(<SessionReport session={baseSession} variant="public" />);
-    expect(html).toContain("Shared read-only");
+    expect(html).toContain("Shared Read-Only");
   });
 });
 
