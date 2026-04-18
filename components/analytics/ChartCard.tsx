@@ -10,7 +10,7 @@ interface ChartCardProps {
 export function ChartCard({ title, description, children, accessory }: ChartCardProps) {
   return (
     <div
-      className="rounded-[18px] p-5"
+      className="rounded-2xl p-5"
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border-default)",

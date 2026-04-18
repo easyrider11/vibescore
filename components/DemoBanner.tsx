@@ -35,8 +35,7 @@ export function DemoBanner() {
           Demo
         </span>
         <span className="truncate">
-          You&rsquo;re exploring a fully seeded workspace — 9 sample candidate sessions,
-          AI grades, and share links. Data is sandboxed to this account.
+          Fake workspace. 9 seeded candidates. Break anything &mdash; you&rsquo;ll get a fresh copy next time.
         </span>
       </div>
       <button

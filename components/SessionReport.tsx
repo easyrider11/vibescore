@@ -1,5 +1,11 @@
 import { DiffViewer } from "./DiffViewer";
 import { parseJsonOr } from "../lib/json";
+import {
+  DECISION_CHIP_CLASSES as DECISION_COLORS,
+  DECISION_LABELS,
+  RUBRIC_LABELS,
+  type Decision,
+} from "../lib/rubric";
 
 interface ReportEvent {
   id: string;
@@ -65,28 +71,6 @@ interface SessionReportProps {
   shareUrl?: string | null;
 }
 
-const DECISION_LABELS: Record<string, string> = {
-  strong_hire: "Strong Hire",
-  hire: "Hire",
-  no_hire: "No Hire",
-  strong_no_hire: "Strong No Hire",
-};
-
-const DECISION_COLORS: Record<string, string> = {
-  strong_hire: "chip-green",
-  hire: "chip-blue",
-  no_hire: "chip-orange",
-  strong_no_hire: "chip-red",
-};
-
-const RUBRIC_LABELS: Record<string, string> = {
-  repo_understanding: "Repo Understanding",
-  requirement_clarity: "Requirement Clarity",
-  delivery_quality: "Delivery Quality",
-  architecture_tradeoffs: "Architecture Tradeoffs",
-  ai_usage_quality: "AI Usage Quality",
-};
-
 function toDate(value: Date | string | null | undefined): Date | null {
   if (!value) return null;
   return value instanceof Date ? value : new Date(value);
@@ -122,6 +106,15 @@ function titleCase(raw: string): string {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
+
+const EVENT_CHIP_COLORS: Record<string, string> = {
+  AI_CHAT: "chip-purple",
+  RUN_TESTS: "chip-orange",
+  SUBMIT: "chip-green",
+  START_SESSION: "chip-blue",
+  OPEN_FILE: "chip-cyan",
+  CLARIFICATION_NOTES: "chip-muted",
+};
 
 export function SessionReport({ session, variant = "authenticated", shareUrl }: SessionReportProps) {
   const sortedEvents = [...session.events].sort((a, b) => {
@@ -225,7 +218,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
 
   return (
     <div className="mx-auto max-w-5xl p-6 lg:p-10 space-y-8">
-      {/* Header */}
       <header className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wider"
              style={{ color: "var(--text-tertiary)" }}>
@@ -262,25 +254,11 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </div>
       </header>
 
-      {/* Headline verdict — hero */}
       {grade && (
         <section
-          className="relative overflow-hidden rounded-[20px] p-6 lg:p-8"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(59,130,246,0.06), rgba(163,113,247,0.05))",
-            border: "1px solid var(--border-default)",
-          }}
+          className="card p-6 lg:p-8"
         >
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at top right, rgba(88,166,255,0.08), transparent 40%)",
-            }}
-          />
-          <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
               <div
                 className="text-[11px] font-semibold uppercase tracking-[0.22em] mb-2"
@@ -297,10 +275,10 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
             </div>
             <div className="flex flex-col items-end gap-2 shrink-0">
               <span
-                className={`chip ${DECISION_COLORS[grade.decision] || "chip-muted"}`}
+                className={`chip ${DECISION_COLORS[grade.decision as Decision] || "chip-muted"}`}
                 style={{ fontSize: 12, padding: "4px 12px" }}
               >
-                {DECISION_LABELS[grade.decision] || grade.decision}
+                {DECISION_LABELS[grade.decision as Decision] || grade.decision}
               </span>
               {gradeScores && (
                 <div
@@ -320,7 +298,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3" data-tabular>
         {[
           { label: "Events", value: sortedEvents.length },
@@ -332,12 +309,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
             value: totalTokens > 0 ? totalTokens.toLocaleString() : "—",
           },
         ].map((kpi) => (
-          <div key={kpi.label}
-               className="rounded-[14px] p-4"
-               style={{
-                 background: "var(--bg-surface)",
-                 border: "1px solid var(--border-default)",
-               }}>
+          <div key={kpi.label} className="card p-4">
             <div className="font-mono text-xl font-semibold tabular"
                  style={{ color: "var(--text-primary)" }}>
               {kpi.value}
@@ -349,13 +321,8 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         ))}
       </div>
 
-      {/* Detailed scoring */}
       {grade && (
-        <section className="rounded-[18px] p-6"
-                 style={{
-                   background: "var(--bg-surface)",
-                   border: "1px solid var(--border-default)",
-                 }}>
+        <section className="card p-6">
           <div className="mb-4">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider"
                 style={{ color: "var(--text-tertiary)" }}>
@@ -433,7 +400,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* Behavior signals */}
       {signals.length > 0 && (
         <section>
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
@@ -449,12 +415,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                   ? "var(--accent-orange)"
                   : "var(--text-tertiary)";
               return (
-                <div key={s.label}
-                     className="rounded-[12px] p-3"
-                     style={{
-                       background: "var(--bg-surface)",
-                       border: "1px solid var(--border-default)",
-                     }}>
+                <div key={s.label} className="card-sm p-3">
                   <div className="text-xs font-semibold mb-0.5" style={{ color }}>
                     {s.label}
                   </div>
@@ -468,17 +429,12 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* Timeline */}
       <section>
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
             style={{ color: "var(--text-tertiary)" }}>
           Timeline
         </h2>
-        <div className="rounded-[14px] overflow-hidden"
-             style={{
-               background: "var(--bg-surface)",
-               border: "1px solid var(--border-default)",
-             }}>
+        <div className="card overflow-hidden">
           {sortedEvents.length === 0 ? (
             <div className="p-4 text-xs" style={{ color: "var(--text-tertiary)" }}>
               No events recorded.
@@ -486,14 +442,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
           ) : (
             <ul className="divide-y" style={{ borderColor: "var(--border-default)" }}>
               {sortedEvents.slice(0, 40).map((event) => {
-                const chipColor: Record<string, string> = {
-                  AI_CHAT: "chip-purple",
-                  RUN_TESTS: "chip-orange",
-                  SUBMIT: "chip-green",
-                  START_SESSION: "chip-blue",
-                  OPEN_FILE: "chip-cyan",
-                  CLARIFICATION_NOTES: "chip-muted",
-                };
                 const payload = parseJsonOr<{
                   mode?: string;
                   path?: string;
@@ -511,7 +459,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                 return (
                   <li key={event.id}
                       className="flex items-center gap-3 px-4 py-2 text-xs">
-                    <span className={`chip ${chipColor[event.type] || "chip-muted"} shrink-0`}
+                    <span className={`chip ${EVENT_CHIP_COLORS[event.type] || "chip-muted"} shrink-0`}
                           style={{ minWidth: 96, justifyContent: "center" }}>
                       {titleCase(event.type.replace(/_/g, " "))}
                     </span>
@@ -537,7 +485,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </div>
       </section>
 
-      {/* AI interactions */}
       {aiEvents.length > 0 && (
         <section>
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
@@ -548,12 +495,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
             {aiEvents.map((event, idx) => {
               const payload = aiPayloads[idx] || {};
               return (
-                <div key={event.id}
-                     className="rounded-[14px] p-4 space-y-2"
-                     style={{
-                       background: "var(--bg-surface)",
-                       border: "1px solid var(--border-default)",
-                     }}>
+                <div key={event.id} className="card p-4 space-y-2">
                   <div className="flex items-center justify-between text-[11px]">
                     <div className="flex items-center gap-2">
                       <span className="chip chip-purple">{payload.mode || "ai"}</span>
@@ -574,7 +516,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                     </p>
                   )}
                   {payload.response && (
-                    <div className="rounded-[10px] p-3 text-xs whitespace-pre-wrap leading-relaxed"
+                    <div className="rounded-lg p-3 text-xs whitespace-pre-wrap leading-relaxed"
                          style={{
                            background: "var(--bg-inset)",
                            color: "var(--text-secondary)",
@@ -589,23 +531,18 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* Test output */}
       {lastTest && (
         <section>
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
               style={{ color: "var(--text-tertiary)" }}>
             Latest Test Run
           </h2>
-          <div className="rounded-[14px] p-4"
-               style={{
-                 background: "var(--bg-surface)",
-                 border: "1px solid var(--border-default)",
-               }}>
+          <div className="card p-4">
             <div className="text-[11px] mb-2 font-mono"
                  style={{ color: "var(--text-tertiary)" }}>
               {formatTime(lastTest.createdAt)}
             </div>
-            <pre className="rounded-[10px] p-3 text-xs whitespace-pre-wrap overflow-x-auto"
+            <pre className="rounded-lg p-3 text-xs whitespace-pre-wrap overflow-x-auto"
                  style={{
                    background: "var(--bg-inset)",
                    color: "var(--text-primary)",
@@ -616,7 +553,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* Submissions */}
       {session.submissions.length > 0 && (
         <section>
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
@@ -625,12 +561,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
           </h2>
           <div className="space-y-4">
             {session.submissions.map((submission, idx) => (
-              <div key={submission.id}
-                   className="rounded-[14px] p-4 space-y-3"
-                   style={{
-                     background: "var(--bg-surface)",
-                     border: "1px solid var(--border-default)",
-                   }}>
+              <div key={submission.id} className="card p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="chip chip-green">Snapshot #{idx + 1}</span>
                   <span className="text-[11px] font-mono"
@@ -639,7 +570,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                   </span>
                 </div>
                 {submission.clarificationNotes && (
-                  <div className="rounded-[10px] p-3 text-xs"
+                  <div className="rounded-lg p-3 text-xs"
                        style={{
                          background: "var(--bg-inset)",
                          color: "var(--text-secondary)",
@@ -658,22 +589,17 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* Manual evaluation */}
       {manualScore && (
         <section>
           <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
               style={{ color: "var(--text-tertiary)" }}>
             Interviewer Evaluation
           </h2>
-          <div className="rounded-[14px] p-4 space-y-3"
-               style={{
-                 background: "var(--bg-surface)",
-                 border: "1px solid var(--border-default)",
-               }}>
+          <div className="card p-4 space-y-3">
             <div className="flex items-center justify-between">
               {manualScore.decision && (
-                <span className={`chip ${DECISION_COLORS[manualScore.decision] || "chip-muted"}`}>
-                  {DECISION_LABELS[manualScore.decision] || manualScore.decision}
+                <span className={`chip ${DECISION_COLORS[manualScore.decision as Decision] || "chip-muted"}`}>
+                  {DECISION_LABELS[manualScore.decision as Decision] || manualScore.decision}
                 </span>
               )}
               <span className="text-[11px] font-mono"
@@ -691,17 +617,12 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </section>
       )}
 
-      {/* Scenario reference */}
       <section>
         <h2 className="font-display text-sm font-semibold uppercase tracking-wider mb-3"
             style={{ color: "var(--text-tertiary)" }}>
           Scenario
         </h2>
-        <div className="rounded-[14px] p-5 space-y-3"
-             style={{
-               background: "var(--bg-surface)",
-               border: "1px solid var(--border-default)",
-             }}>
+        <div className="card p-5 space-y-3">
           <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             {session.scenario.background}
           </p>
@@ -749,7 +670,6 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="pt-6 text-center text-[11px]"
               style={{ color: "var(--text-tertiary)", borderTop: "1px solid var(--border-default)" }}>
         {variant === "public"

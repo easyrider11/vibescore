@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { isAiNativeSlug } from "../lib/scenarios";
+
 interface Scenario {
   id: string;
   slug?: string;
@@ -11,8 +13,6 @@ interface Scenario {
   timeLimitMin?: number | null;
   allowedModes?: string[];
 }
-
-const AI_NATIVE_SLUGS = new Set(["agent-loop-fix"]);
 
 export function ScenarioGrid({ scenarios }: { scenarios: Scenario[] }) {
   const router = useRouter();
@@ -50,7 +50,7 @@ export function ScenarioGrid({ scenarios }: { scenarios: Scenario[] }) {
       )}
       <div className="grid gap-3 md:grid-cols-3">
         {scenarios.map((scenario) => {
-          const isAiNative = scenario.slug ? AI_NATIVE_SLUGS.has(scenario.slug) : false;
+          const isAiNative = isAiNativeSlug(scenario.slug);
           return (
             <div
               key={scenario.id}

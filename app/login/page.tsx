@@ -82,7 +82,7 @@ function LoginForm() {
       style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
     >
       <div
-        className="w-full max-w-md rounded-[22px] p-8"
+        className="w-full max-w-md rounded-2xl p-8"
         style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
       >
         <div

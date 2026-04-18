@@ -16,7 +16,7 @@ describe("landing page", () => {
     expect(html).toContain("Hire the engineers who build well");
     expect(html).toContain("with AI");
     expect(html).toContain("Try the interactive demo");
-    expect(html).toContain("Why teams switch");
+    expect(html).toContain("What we record while the candidate works");
   });
 });
 

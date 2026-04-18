@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import {
+  DECISION_CHIP_CLASSES as DECISION_COLORS,
+  DECISION_LABELS,
+  RUBRIC_LABELS,
+  type Decision,
+} from "../lib/rubric";
+import { parseJsonOr } from "../lib/json";
 
 interface AIGradeData {
   id: string;
@@ -13,38 +20,16 @@ interface AIGradeData {
   createdAt: string;
 }
 
-const RUBRIC_LABELS: Record<string, string> = {
-  repo_understanding: "Repo Understanding",
-  requirement_clarity: "Requirement Clarity",
-  delivery_quality: "Delivery Quality",
-  architecture_tradeoffs: "Architecture Tradeoffs",
-  ai_usage_quality: "AI Usage Quality",
-};
-
-const DECISION_COLORS: Record<string, string> = {
-  strong_hire: "chip-green",
-  hire: "chip-blue",
-  no_hire: "chip-orange",
-  strong_no_hire: "chip-red",
-};
-
-const DECISION_LABELS: Record<string, string> = {
-  strong_hire: "Strong Hire",
-  hire: "Hire",
-  no_hire: "No Hire",
-  strong_no_hire: "Strong No Hire",
-};
-
 function parseGrade(raw: unknown): AIGradeData | null {
   if (!raw || typeof raw !== "object") return null;
   const g = raw as Record<string, unknown>;
   return {
     id: String(g.id || ""),
-    scores: (typeof g.scores === "string" ? JSON.parse(g.scores) : g.scores) as Record<string, number>,
+    scores: parseJsonOr<Record<string, number>>(g.scores, {}),
     decision: String(g.decision || ""),
     summary: String(g.summary || ""),
-    strengths: (typeof g.strengths === "string" ? JSON.parse(g.strengths) : g.strengths) as string[],
-    improvements: (typeof g.improvements === "string" ? JSON.parse(g.improvements) : g.improvements) as string[],
+    strengths: parseJsonOr<string[]>(g.strengths, []),
+    improvements: parseJsonOr<string[]>(g.improvements, []),
     model: String(g.model || ""),
     createdAt: String(g.createdAt || ""),
   };
@@ -123,8 +108,8 @@ export function AIGradePanel({
     <div className="evidence-block">
       <div className="evidence-block-header">
         <span>AI Assessment</span>
-        <span className={`chip ${DECISION_COLORS[grade.decision] || "chip-muted"}`}>
-          {DECISION_LABELS[grade.decision] || grade.decision}
+        <span className={`chip ${DECISION_COLORS[grade.decision as Decision] || "chip-muted"}`}>
+          {DECISION_LABELS[grade.decision as Decision] || grade.decision}
         </span>
       </div>
       <div className="evidence-block-body space-y-4">

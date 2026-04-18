@@ -17,23 +17,16 @@ export default function PricingPage() {
       <MarketingNav primaryCta={marketingCtas.primary} secondaryCta={marketingCtas.secondary} scrolled />
 
       <main>
-        <section className="relative overflow-hidden px-6 pb-16 pt-16 md:px-12 md:pb-20 md:pt-24">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at top left, rgba(88,166,255,0.12), transparent 25%), radial-gradient(circle at right center, rgba(163,113,247,0.12), transparent 24%)",
-            }}
-          />
-          <div className="relative mx-auto max-w-5xl text-center">
+        <section className="px-6 pb-16 pt-16 md:px-12 md:pb-20 md:pt-24">
+          <div className="mx-auto max-w-5xl text-center">
             <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
               Pricing
             </div>
             <h1 className="mx-auto mt-4 max-w-4xl font-display text-5xl font-semibold tracking-tight md:text-6xl">
-              Priced for teams hiring the engineers who&nbsp;ship&nbsp;with&nbsp;AI.
+              Pricing.
             </h1>
-            <p className="mx-auto mt-6 max-w-3xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
-              <span translate="no">Buildscore</span> replaces whiteboard puzzles with real-codebase sessions, a built-in copilot, and AI-usage analytics. Start free, go Pro when hiring volume grows, add Enterprise when security and rollout matter.
+            <p className="mx-auto mt-6 max-w-xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
+              Free while you kick the tires. Pro when you&rsquo;re running real loops. Talk to us if you need SSO or a procurement PDF.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <TryDemoButton label="Try an interactive demo" variant="primary" />
@@ -53,7 +46,7 @@ export default function PricingPage() {
               </a>
             </div>
             <p className="mx-auto mt-3 max-w-2xl text-xs" style={{ color: "var(--text-tertiary)" }}>
-              Spins up a populated workspace with 9 sample candidate sessions, AI-graded, in about two seconds. No signup.
+              No signup. Loads in under two seconds.
             </p>
           </div>
         </section>
@@ -65,7 +58,7 @@ export default function PricingPage() {
               {pricingAudienceBands.map((band) => (
                 <div
                   key={band.title}
-                  className="rounded-[22px] p-5"
+                  className="rounded-2xl p-5"
                   style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
                 >
                   <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--accent-cyan)" }}>
@@ -100,7 +93,7 @@ export default function PricingPage() {
             </div>
 
             <div
-              className="mt-10 overflow-hidden rounded-[24px]"
+              className="mt-10 overflow-hidden rounded-2xl"
               style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
             >
               <div

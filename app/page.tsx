@@ -8,14 +8,7 @@ import { MarketingNav } from "../components/marketing/MarketingNav";
 import { PricingPackageCard } from "../components/marketing/PricingPackageCard";
 import { ProofStrip } from "../components/marketing/ProofStrip";
 import { TryDemoButton } from "../components/marketing/TryDemoButton";
-import {
-  differentiators,
-  marketingCtas,
-  pricingPackages,
-  proofPoints,
-  teamOutcomes,
-  workflowSteps,
-} from "../lib/marketing";
+import { marketingCtas, pricingPackages, proofPoints } from "../lib/marketing";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -50,14 +43,11 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-6xl">
             <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
               <div>
-                <div className="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ background: "rgba(59,130,246,0.12)", color: "var(--accent-cyan)" }}>
-                  AI-native technical interviews
-                </div>
-                <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold tracking-tight md:text-7xl">
+                <h1 className="max-w-3xl font-display text-5xl font-semibold tracking-tight md:text-7xl">
                   Hire the engineers who build well <em className="not-italic" style={{ color: "var(--accent-cyan)" }}>with AI</em>.
                 </h1>
-                <p className="mt-6 max-w-2xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
-                  <span translate="no">Buildscore</span> replaces whiteboard puzzles with real-codebase sessions, a built-in copilot, and AI-usage analytics — so you can evaluate how candidates actually ship in 2026.
+                <p className="mt-6 max-w-xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
+                  A real codebase. A real copilot. A timeline of every prompt, test run, and file open. Then you decide.
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -78,7 +68,7 @@ export default function LandingPage() {
                   </Link>
                 </div>
                 <p className="mt-3 max-w-xl text-xs" style={{ color: "var(--text-tertiary)" }}>
-                  Provisions a fully populated recruiter workspace — 9 sample candidate sessions, AI grades, shareable reports — in about two seconds. No signup.
+                  Spins up a fake workspace with 9 seeded candidates. No signup. No email.
                 </p>
 
                 <div className="mt-8 max-w-2xl">
@@ -92,80 +82,21 @@ export default function LandingPage() {
         </section>
 
         <section className="px-6 py-20 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="Why teams switch"
-              title="The interview moves from interviewer memory to reviewable evidence."
-              description="Replace one-off coding puzzles with structured interview signals that are easier to compare, share, and defend."
-            />
-
-            <div className="mt-12 grid gap-5 lg:grid-cols-3">
-              {teamOutcomes.map((outcome) => (
-                <div
-                  key={outcome.title}
-                  className="rounded-[24px] p-6"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-                >
-                  <h3 className="font-display text-2xl font-semibold tracking-tight">{outcome.title}</h3>
-                  <p className="mt-4 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-                    {outcome.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 py-20 md:px-12" style={{ background: "linear-gradient(180deg, rgba(22,27,34,0), rgba(22,27,34,0.48))" }}>
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="How it works"
-              title="A hiring workflow designed for realistic technical work."
-              description="From session setup to final review, each step is meant to create higher-confidence decisions without adding coordinator overhead."
-            />
-
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {workflowSteps.map((step, index) => (
-                <div
-                  key={step.title}
-                  className="rounded-[24px] p-6"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-                >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
-                    0{index + 1}
-                  </div>
-                  <h3 className="mt-4 font-display text-2xl font-semibold tracking-tight">{step.title}</h3>
-                  <p className="mt-4 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 py-20 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="Differentiators"
-              title="Built for structured hiring loops, not generic coding challenges."
-              description="The product stays close to how modern engineering teams actually interview: real tasks, AI in the loop, reviewer context preserved."
-            />
-
-            <div className="mt-12 grid gap-5 md:grid-cols-2">
-              {differentiators.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[24px] p-6"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-                >
-                  <h3 className="font-display text-xl font-semibold tracking-tight">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-                    {item.description}
-                  </p>
-                </div>
-              ))}
-            </div>
+          <div className="mx-auto max-w-5xl">
+            <h2 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+              What we record while the candidate works.
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-7" style={{ color: "var(--text-secondary)" }}>
+              Every keystroke, AI prompt, file open, and test run lands in one timeline. When you open the report, you can answer the only questions that matter: did they understand the problem, and did they use AI like a senior would?
+            </p>
+            <ul className="mt-10 grid gap-2 text-sm leading-7 md:grid-cols-2" style={{ color: "var(--text-secondary)" }}>
+              <li>· AI prompts and responses, per mode, with token counts</li>
+              <li>· Every test run and its output</li>
+              <li>· Files opened and the order they were opened in</li>
+              <li>· Each submission diff against the starting repo</li>
+              <li>· Interviewer rubric scores + an AI second-opinion grade</li>
+              <li>· Public report link you can share with the rest of the panel</li>
+            </ul>
           </div>
         </section>
 

@@ -29,7 +29,7 @@ export function KpiCard({ label, value, subtitle, trend, accent, icon }: KpiCard
 
   return (
     <div
-      className="rounded-[18px] p-5 transition-colors hover:border-[var(--border-focus)]"
+      className="rounded-2xl p-5 transition-colors hover:border-[var(--border-focus)]"
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border-default)",

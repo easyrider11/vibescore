@@ -26,7 +26,7 @@ export function PricingPackageCard({
 }: PricingPackageCardProps) {
   return (
     <article
-      className="flex h-full flex-col rounded-[24px] p-6 md:p-7"
+      className="flex h-full flex-col rounded-2xl p-6 md:p-7"
       style={{
         background: highlighted ? "linear-gradient(180deg, rgba(22,27,34,1), rgba(20,25,33,1))" : "var(--bg-surface)",
         border: `1px solid ${highlighted ? "rgba(59,130,246,0.7)" : "var(--border-default)"}`,

@@ -1,58 +1,32 @@
-/**
- * A pure-CSS/markup product preview that mimics the real session-report UI.
- * Used on the landing hero so visitors immediately see what the product feels
- * like — no screenshots, no CLS, no loading state.
- */
 export function HeroProductPreview() {
   return (
     <div
       aria-hidden="true"
-      className="relative overflow-hidden rounded-[22px]"
+      className="relative overflow-hidden rounded-2xl"
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border-default)",
         boxShadow: "0 24px 60px -28px rgba(0,0,0,0.7)",
       }}
     >
-      {/* Chrome */}
       <div
-        className="flex items-center gap-2 px-4 py-2.5"
+        className="flex items-center px-4 py-2"
         style={{ borderBottom: "1px solid var(--border-default)" }}
       >
-        <div className="flex items-center gap-1.5">
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ background: "#ff5f57" }}
-          />
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ background: "#febc2e" }}
-          />
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ background: "#28c840" }}
-          />
-        </div>
         <div
-          className="ml-3 flex-1 truncate rounded px-2.5 py-1 text-[11px] font-mono"
-          style={{
-            background: "var(--bg-inset)",
-            color: "var(--text-tertiary)",
-          }}
+          className="flex-1 truncate text-[11px] font-mono"
+          style={{ color: "var(--text-tertiary)" }}
         >
-          buildscore.dev/r/priya-patel · agent-loop-fix
+          buildscore.dev/r/alex-chen · agent-loop-fix
         </div>
       </div>
 
-      {/* Body */}
       <div className="p-5 space-y-4">
-        {/* Verdict hero */}
         <div
-          className="rounded-[14px] p-4"
+          className="rounded-xl p-4"
           style={{
-            background:
-              "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(163,113,247,0.08))",
-            border: "1px solid rgba(88,166,255,0.18)",
+            background: "var(--bg-inset)",
+            border: "1px solid var(--border-subtle)",
           }}
         >
           <div className="flex items-start justify-between gap-3">
@@ -87,7 +61,6 @@ export function HeroProductPreview() {
           </div>
         </div>
 
-        {/* KPIs */}
         <div className="grid grid-cols-4 gap-2" data-tabular>
           {[
             { label: "AI Queries", value: "8" },
@@ -119,7 +92,6 @@ export function HeroProductPreview() {
           ))}
         </div>
 
-        {/* Rubric bars */}
         <div className="space-y-1.5">
           {[
             { label: "Repo understanding", val: 5 },
@@ -156,7 +128,6 @@ export function HeroProductPreview() {
           ))}
         </div>
 
-        {/* AI interaction snippet */}
         <div
           className="rounded-lg p-3"
           style={{

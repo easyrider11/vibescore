@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AI_NATIVE_SLUGS, isAiNativeSlug } from "../../../lib/scenarios";
 
 interface Scenario {
   id: string;
@@ -12,7 +13,6 @@ interface Scenario {
 }
 
 const steps = ["Template", "Candidate", "Configure", "Review"];
-const AI_NATIVE_SLUGS = new Set(["agent-loop-fix"]);
 
 export default function NewSessionWizard() {
   const router = useRouter();
@@ -200,7 +200,7 @@ export default function NewSessionWizard() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {scenarios.map((sc) => {
-                const isAiNative = AI_NATIVE_SLUGS.has(sc.slug);
+                const isAiNative = isAiNativeSlug(sc.slug);
                 const isSelected = selectedScenario?.id === sc.id;
                 return (
                   <button

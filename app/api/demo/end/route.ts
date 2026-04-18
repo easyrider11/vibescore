@@ -9,6 +9,6 @@ export async function POST() {
     return NextResponse.json({ error: "Not a demo account" }, { status: 400 });
   }
 
-  await endDemoSession(user.id);
+  await endDemoSession({ id: user.id, email: user.email, orgId: user.orgId });
   return NextResponse.json({ ok: true });
 }
