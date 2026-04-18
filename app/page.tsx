@@ -126,7 +126,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-6 pb-24 pt-10 md:px-12">
+        <section className="px-6 pb-16 pt-10 md:px-12">
           <div className="mx-auto max-w-6xl">
             <MarketingCtaBanner
               eyebrow="See the workflow live"
@@ -137,6 +137,20 @@ export default function LandingPage() {
             />
           </div>
         </section>
+
+        <footer
+          className="px-6 pb-10 pt-6 md:px-12"
+          style={{ borderTop: "1px solid var(--border-default)" }}
+        >
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
+            <span translate="no" className="font-semibold">Buildscore</span>
+            <div className="flex items-center gap-5">
+              <Link href="/pricing" style={{ color: "inherit" }}>Pricing</Link>
+              <Link href="/changelog" style={{ color: "inherit" }}>Changelog</Link>
+              <Link href={marketingCtas.primary.href} style={{ color: "inherit" }}>{marketingCtas.primary.label}</Link>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );
@@ -153,7 +167,7 @@ function SectionHeading({
 }) {
   return (
     <div className="max-w-3xl">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
+      <div className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
         {eyebrow}
       </div>
       <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight md:text-5xl">{title}</h2>

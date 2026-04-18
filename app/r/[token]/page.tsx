@@ -112,7 +112,7 @@ export default async function PublicReportPage({
             Buildscore
           </Link>
           <span
-            className="text-[11px] uppercase tracking-wider"
+            className="text-xs uppercase tracking-wider"
             style={{ color: "var(--text-tertiary)" }}
           >
             Shared report

@@ -8,7 +8,7 @@ export default function NotFound() {
     >
       <div className="max-w-md text-center">
         <div
-          className="text-[11px] font-semibold uppercase tracking-[0.24em]"
+          className="text-xs font-semibold uppercase tracking-[0.24em]"
           style={{ color: "var(--accent-cyan)" }}
         >
           404

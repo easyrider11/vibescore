@@ -42,7 +42,7 @@ export function PricingPackageCard({
             {highlight}
           </div>
         )}
-        <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--text-tertiary)" }}>
+        <div className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--text-tertiary)" }}>
           {name}
         </div>
         <div className="mt-3 flex items-end gap-2">
@@ -63,7 +63,7 @@ export function PricingPackageCard({
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-3 text-sm" style={{ color: "var(--text-secondary)" }}>
             <span
-              className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+              className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
               style={{ background: "rgba(63,185,80,0.14)", color: "var(--accent-green)" }}
             >
               +

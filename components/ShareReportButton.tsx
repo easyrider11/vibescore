@@ -59,7 +59,7 @@ export function ShareReportButton({ sessionId, initialToken }: Props) {
           {loading ? "Creating link…" : "Share report"}
         </button>
         {error && (
-          <span className="text-[11px]" style={{ color: "var(--status-error)" }}>
+          <span className="text-xs" style={{ color: "var(--status-error)" }}>
             {error}
           </span>
         )}

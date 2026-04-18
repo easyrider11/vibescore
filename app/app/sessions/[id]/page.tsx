@@ -108,7 +108,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
         ].map((stat) => (
           <div key={stat.label} className="card p-3">
             <div className="text-lg font-semibold font-mono" style={{ color: "var(--text-primary)" }}>{stat.value}</div>
-            <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>{stat.label}</div>
+            <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>{stat.label}</div>
           </div>
         ))}
       </div>

@@ -17,15 +17,9 @@ export function MarketingCtaBanner({
   secondaryCta,
 }: MarketingCtaBannerProps) {
   return (
-    <section
-      className="rounded-2xl px-8 py-12 md:px-12"
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-default)",
-      }}
-    >
+    <section className="card px-8 py-12 md:px-12">
       <div className="max-w-3xl">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
+        <div className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
           {eyebrow}
         </div>
         <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight md:text-4xl">{title}</h2>

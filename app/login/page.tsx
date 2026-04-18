@@ -86,7 +86,7 @@ function LoginForm() {
         style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
       >
         <div
-          className="text-[11px] font-semibold uppercase tracking-[0.24em]"
+          className="text-xs font-semibold uppercase tracking-[0.24em]"
           style={{ color: "var(--accent-cyan)" }}
         >
           Sign in
@@ -113,7 +113,7 @@ function LoginForm() {
 
         <label className="mt-6 block">
           <span
-            className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+            className="text-xs font-semibold uppercase tracking-[0.22em]"
             style={{ color: "var(--text-tertiary)" }}
           >
             Work email

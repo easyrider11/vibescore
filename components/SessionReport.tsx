@@ -6,162 +6,25 @@ import {
   RUBRIC_LABELS,
   type Decision,
 } from "../lib/rubric";
+import type { SessionReportProps } from "./session-report/types";
+import { EVENT_CHIP_COLORS, formatDate, formatTime, titleCase } from "./session-report/utils";
+import { deriveSessionData } from "./session-report/derive";
 
-interface ReportEvent {
-  id: string;
-  type: string;
-  payload: unknown;
-  createdAt: Date | string;
-}
-
-interface ReportSubmission {
-  id: string;
-  diffText: string;
-  clarificationNotes: string | null;
-  createdAt: Date | string;
-}
-
-interface ReportRubricScore {
-  id: string;
-  scores: unknown;
-  comments: string;
-  decision: string;
-  createdAt: Date | string;
-}
-
-interface ReportAIGrade {
-  scores: unknown;
-  decision: string;
-  summary: string;
-  strengths: unknown;
-  improvements: unknown;
-  model: string;
-}
-
-interface ReportScenario {
-  title: string;
-  description: string;
-  background: string;
-  tasks: unknown;
-  evaluationPoints: unknown;
-  aiPolicy: unknown;
-  timeLimitMin: number | null;
-}
-
-interface ReportSession {
-  id: string;
-  scenario: ReportScenario;
-  status: string;
-  candidateName: string;
-  candidateEmail: string;
-  position: string;
-  durationMinutes: number;
-  startedAt: Date | string | null;
-  endedAt: Date | string | null;
-  createdAt: Date | string;
-  events: ReportEvent[];
-  submissions: ReportSubmission[];
-  rubricScores: ReportRubricScore[];
-  aiGrade: ReportAIGrade | null;
-}
-
-interface SessionReportProps {
-  session: ReportSession;
-  variant?: "authenticated" | "public";
-  shareUrl?: string | null;
-}
-
-function toDate(value: Date | string | null | undefined): Date | null {
-  if (!value) return null;
-  return value instanceof Date ? value : new Date(value);
-}
-
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-function formatTime(value: Date | string | null | undefined): string {
-  const d = toDate(value);
-  if (!d) return "—";
-  return timeFormatter.format(d);
-}
-
-function formatDate(value: Date | string | null | undefined): string {
-  const d = toDate(value);
-  if (!d) return "—";
-  return dateFormatter.format(d);
-}
-
-function titleCase(raw: string): string {
-  return raw
-    .toLowerCase()
-    .split(" ")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-const EVENT_CHIP_COLORS: Record<string, string> = {
-  AI_CHAT: "chip-purple",
-  RUN_TESTS: "chip-orange",
-  SUBMIT: "chip-green",
-  START_SESSION: "chip-blue",
-  OPEN_FILE: "chip-cyan",
-  CLARIFICATION_NOTES: "chip-muted",
-};
+export type { ReportSession, SessionReportProps } from "./session-report/types";
 
 export function SessionReport({ session, variant = "authenticated", shareUrl }: SessionReportProps) {
-  const sortedEvents = [...session.events].sort((a, b) => {
-    const aT = toDate(a.createdAt)?.getTime() ?? 0;
-    const bT = toDate(b.createdAt)?.getTime() ?? 0;
-    return aT - bT;
-  });
-
-  const aiEvents = sortedEvents.filter((e) => e.type === "AI_CHAT");
-  const testEvents = sortedEvents.filter((e) => e.type === "RUN_TESTS");
-  const fileOpenEvents = sortedEvents.filter((e) => e.type === "OPEN_FILE");
-  const submitEvents = sortedEvents.filter((e) => e.type === "SUBMIT");
-
-  const aiPayloads = aiEvents.map((e) =>
-    parseJsonOr<{
-      mode?: string;
-      question?: string;
-      response?: string;
-      tokensUsed?: number;
-      responseTimeMs?: number;
-      mocked?: boolean;
-    }>(e.payload, {}),
-  );
-
-  const aiModeBreakdown: Record<string, number> = {};
-  for (const p of aiPayloads) {
-    const mode = p.mode || "unknown";
-    aiModeBreakdown[mode] = (aiModeBreakdown[mode] || 0) + 1;
-  }
-  const totalTokens = aiPayloads.reduce((sum, p) => sum + (p.tokensUsed || 0), 0);
-
-  const uniqueFilesViewed = new Set(
-    fileOpenEvents.map((e) => parseJsonOr<{ path?: string }>(e.payload, {}).path),
-  ).size;
-
-  const lastTest = [...testEvents].reverse()[0];
-  const lastTestPayload = parseJsonOr<{ stdout?: string; passed?: boolean }>(
-    lastTest?.payload,
-    {},
-  );
-
-  const started = toDate(session.startedAt);
-  const ended = toDate(session.endedAt);
-  const durationMin =
-    started && ended
-      ? Math.max(1, Math.round((ended.getTime() - started.getTime()) / 60000))
-      : null;
+  const {
+    sortedEvents,
+    aiEvents,
+    testEvents,
+    aiPayloads,
+    totalTokens,
+    uniqueFilesViewed,
+    lastTest,
+    lastTestPayload,
+    durationMin,
+    signals,
+  } = deriveSessionData(session);
 
   const scenarioTasks = parseJsonOr<string[]>(session.scenario.tasks, []);
   const scenarioEvalPoints = parseJsonOr<string[]>(session.scenario.evaluationPoints, []);
@@ -177,49 +40,10 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
 
   const manualScore = session.rubricScores[0] || null;
 
-  // Simple anti-cheat / "AI native" signals
-  const signals: Array<{ label: string; tone: "good" | "neutral" | "warn"; hint: string }> = [];
-  if (aiEvents.length === 0) {
-    signals.push({
-      label: "Did not use AI",
-      tone: "neutral",
-      hint: "Candidate chose to work without the copilot.",
-    });
-  } else if (aiEvents.length >= 3) {
-    signals.push({
-      label: `Used AI ${aiEvents.length}x`,
-      tone: "good",
-      hint: `Modes: ${Object.entries(aiModeBreakdown)
-        .map(([m, n]) => `${m} ${n}`)
-        .join(", ")}`,
-    });
-  }
-  if (testEvents.length >= 2) {
-    signals.push({
-      label: `${testEvents.length} test runs`,
-      tone: "good",
-      hint: "Iterated on test output before submitting.",
-    });
-  }
-  if (testEvents.length === 0 && submitEvents.length > 0) {
-    signals.push({
-      label: "Submitted without running tests",
-      tone: "warn",
-      hint: "No test runs were recorded before submission.",
-    });
-  }
-  if (durationMin !== null && durationMin < 5) {
-    signals.push({
-      label: "Very short session",
-      tone: "warn",
-      hint: `Only ${durationMin} minute${durationMin === 1 ? "" : "s"} between start and end.`,
-    });
-  }
-
   return (
     <div className="mx-auto max-w-5xl p-6 lg:p-10 space-y-8">
       <header className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wider"
+        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-wider"
              style={{ color: "var(--text-tertiary)" }}>
           <span>Session Report</span>
           <span aria-hidden="true">·</span>
@@ -261,7 +85,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
               <div
-                className="text-[11px] font-semibold uppercase tracking-[0.22em] mb-2"
+                className="text-xs font-semibold uppercase tracking-[0.22em] mb-2"
                 style={{ color: "var(--accent-cyan)" }}
               >
                 AI Assessment
@@ -282,7 +106,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
               </span>
               {gradeScores && (
                 <div
-                  className="font-mono text-[11px] tabular"
+                  className="font-mono text-xs tabular"
                   style={{ color: "var(--text-tertiary)" }}
                 >
                   Avg{" "}
@@ -314,7 +138,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                  style={{ color: "var(--text-primary)" }}>
               {kpi.value}
             </div>
-            <div className="text-[11px] mt-1" style={{ color: "var(--text-tertiary)" }}>
+            <div className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
               {kpi.label}
             </div>
           </div>
@@ -477,7 +301,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
             </ul>
           )}
           {sortedEvents.length > 40 && (
-            <div className="px-4 py-2 text-[11px]"
+            <div className="px-4 py-2 text-xs"
                  style={{ color: "var(--text-tertiary)", borderTop: "1px solid var(--border-default)" }}>
               Showing first 40 of {sortedEvents.length} events.
             </div>
@@ -496,7 +320,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
               const payload = aiPayloads[idx] || {};
               return (
                 <div key={event.id} className="card p-4 space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
+                  <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
                       <span className="chip chip-purple">{payload.mode || "ai"}</span>
                       <span style={{ color: "var(--text-tertiary)" }}>#{idx + 1}</span>
@@ -538,7 +362,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
             Latest Test Run
           </h2>
           <div className="card p-4">
-            <div className="text-[11px] mb-2 font-mono"
+            <div className="text-xs mb-2 font-mono"
                  style={{ color: "var(--text-tertiary)" }}>
               {formatTime(lastTest.createdAt)}
             </div>
@@ -564,7 +388,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
               <div key={submission.id} className="card p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="chip chip-green">Snapshot #{idx + 1}</span>
-                  <span className="text-[11px] font-mono"
+                  <span className="text-xs font-mono"
                         style={{ color: "var(--text-tertiary)" }}>
                     {formatTime(submission.createdAt)}
                   </span>
@@ -602,7 +426,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                   {DECISION_LABELS[manualScore.decision as Decision] || manualScore.decision}
                 </span>
               )}
-              <span className="text-[11px] font-mono"
+              <span className="text-xs font-mono"
                     style={{ color: "var(--text-tertiary)" }}>
                 {formatDate(manualScore.createdAt)}
               </span>
@@ -670,7 +494,7 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
         </div>
       </section>
 
-      <footer className="pt-6 text-center text-[11px]"
+      <footer className="pt-6 text-center text-xs"
               style={{ color: "var(--text-tertiary)", borderTop: "1px solid var(--border-default)" }}>
         {variant === "public"
           ? "Read-only session report · generated by "

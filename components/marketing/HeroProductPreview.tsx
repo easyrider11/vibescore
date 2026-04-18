@@ -14,7 +14,7 @@ export function HeroProductPreview() {
         style={{ borderBottom: "1px solid var(--border-default)" }}
       >
         <div
-          className="flex-1 truncate text-[11px] font-mono"
+          className="flex-1 truncate text-xs font-mono"
           style={{ color: "var(--text-tertiary)" }}
         >
           buildscore.dev/r/alex-chen · agent-loop-fix
@@ -32,7 +32,7 @@ export function HeroProductPreview() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div
-                className="text-[9px] font-semibold uppercase tracking-[0.2em] mb-1"
+                className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-1"
                 style={{ color: "var(--accent-cyan)" }}
               >
                 AI Assessment
@@ -83,7 +83,7 @@ export function HeroProductPreview() {
                 {kpi.value}
               </div>
               <div
-                className="text-[9px] mt-0.5"
+                className="text-[10px] mt-0.5"
                 style={{ color: "var(--text-tertiary)" }}
               >
                 {kpi.label}
@@ -150,7 +150,7 @@ export function HeroProductPreview() {
             </span>
           </div>
           <div
-            className="text-[11px] leading-relaxed"
+            className="text-xs leading-relaxed"
             style={{ color: "var(--text-secondary)" }}
           >
             "Walk me through the loop in lib/agent.js — where could this go infinite?"

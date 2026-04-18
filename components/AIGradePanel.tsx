@@ -189,7 +189,7 @@ export function AIGradePanel({
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2" style={{ borderTop: "1px solid var(--border-default)" }}>
-          <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>
+          <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
             {grade.model !== "mock" ? `Model: ${grade.model}` : "Mock mode"}
           </span>
           <button

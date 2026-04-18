@@ -13,7 +13,7 @@ export function DiffViewer({ diffText }: DiffViewerProps) {
 
   return (
     <div className="pane-inset p-3 text-xs font-mono overflow-x-auto">
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-sans">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-sans">
         <span className="chip chip-green">{additions} addition{additions === 1 ? "" : "s"}</span>
         <span className="chip chip-red">{deletions} deletion{deletions === 1 ? "" : "s"}</span>
       </div>

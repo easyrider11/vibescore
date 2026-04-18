@@ -205,7 +205,7 @@ export default function BillingPage() {
                   <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
                     {plan.name}
                   </h3>
-                  {isCurrent && <span className="chip chip-blue text-[9px]">Current</span>}
+                  {isCurrent && <span className="chip chip-blue text-[10px]">Current</span>}
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>

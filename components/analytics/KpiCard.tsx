@@ -29,15 +29,11 @@ export function KpiCard({ label, value, subtitle, trend, accent, icon }: KpiCard
 
   return (
     <div
-      className="rounded-2xl p-5 transition-colors hover:border-[var(--border-focus)]"
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-default)",
-      }}
+      className="card p-5 transition-colors hover:border-[var(--border-focus)]"
     >
       <div className="flex items-start justify-between gap-3">
         <p
-          className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+          className="text-xs font-semibold uppercase tracking-[0.22em]"
           style={{ color: "var(--text-tertiary)" }}
         >
           {label}

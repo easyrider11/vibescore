@@ -57,7 +57,7 @@ export function RubricForm({ sessionId }: { sessionId: string }) {
     ["requirement_clarity", "Requirement Clarification", "Did they ask good questions and document assumptions?"],
     ["delivery_quality", "Delivery Quality", "Is the code correct, clean, and well-structured?"],
     ["architecture_tradeoffs", "Architecture Tradeoffs", "Did they consider scalability, maintainability, edge cases?"],
-    ["ai_usage_quality", "AI Usage Quality", "How effectively did they leverage the AI copilot?"],
+    ["ai_usage_quality", "AI Usage Quality", "Did they use the copilot like a senior engineer would?"],
   ];
 
   return (

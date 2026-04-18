@@ -192,7 +192,7 @@ export default function InterviewerLivePage() {
         <main className="flex flex-1 flex-col overflow-hidden">
           <div className="flex h-9 items-center px-3" style={{ borderBottom: "1px solid var(--border-default)" }}>
             <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{activeFile || "No file selected"}</span>
-            <span className="ml-2 rounded px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: "rgba(210,153,34,0.15)", color: "var(--accent-orange)" }}>
+            <span className="ml-2 rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: "rgba(210,153,34,0.15)", color: "var(--accent-orange)" }}>
               READ-ONLY
             </span>
           </div>
@@ -240,10 +240,10 @@ export default function InterviewerLivePage() {
                 aiChat.map((chat) => (
                   <div key={chat.id} className="rounded-lg p-3 space-y-2" style={{ background: "var(--bg-surface-alt)" }}>
                     <div className="flex items-center justify-between">
-                      <span className="rounded-full px-2 py-0.5 text-[9px] font-semibold" style={{ background: "rgba(163,113,247,0.2)", color: "var(--accent-purple)" }}>
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: "rgba(163,113,247,0.2)", color: "var(--accent-purple)" }}>
                         {chat.mode}
                       </span>
-                      <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>
+                      <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
                         {new Date(chat.createdAt).toLocaleTimeString()}
                       </span>
                     </div>
@@ -298,7 +298,7 @@ export default function InterviewerLivePage() {
                 </h3>
                 <div className="space-y-1">
                   {aiChat.slice(-5).map((chat) => (
-                    <div key={chat.id} className="text-[11px] truncate" style={{ color: "var(--text-secondary)" }}>
+                    <div key={chat.id} className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
                       <span className="text-accent-purple mr-1">[{chat.mode}]</span>
                       {chat.question}
                     </div>
@@ -314,7 +314,7 @@ export default function InterviewerLivePage() {
                   {Object.entries(
                     events.reduce<Record<string, number>>((acc, e) => { acc[e.type] = (acc[e.type] || 0) + 1; return acc; }, {})
                   ).map(([type, count]) => (
-                    <div key={type} className="flex items-center justify-between text-[11px]">
+                    <div key={type} className="flex items-center justify-between text-xs">
                       <span style={{ color: eventTypeConfig[type]?.color || "var(--text-secondary)" }}>{type}</span>
                       <span className="font-mono" style={{ color: "var(--text-tertiary)" }}>{count}</span>
                     </div>
@@ -340,8 +340,8 @@ export default function InterviewerLivePage() {
                         <span className="shrink-0 font-mono text-[10px] font-bold" style={{ color: cfg.color }}>{cfg.icon}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-medium" style={{ color: cfg.color }}>{event.type}</span>
-                            <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>
+                            <span className="text-xs font-medium" style={{ color: cfg.color }}>{event.type}</span>
+                            <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
                               {new Date(event.createdAt).toLocaleTimeString()}
                             </span>
                           </div>
@@ -375,12 +375,12 @@ export default function InterviewerLivePage() {
                   <div key={sub.id} className="rounded-lg p-3 space-y-2" style={{ background: "var(--bg-surface-alt)" }}>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-accent-blue">Submission</span>
-                      <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>
+                      <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
                         {new Date(sub.createdAt).toLocaleTimeString()}
                       </span>
                     </div>
                     {sub.clarificationNotes && (
-                      <div className="text-[11px] italic" style={{ color: "var(--text-secondary)" }}>
+                      <div className="text-xs italic" style={{ color: "var(--text-secondary)" }}>
                         Notes: {sub.clarificationNotes}
                       </div>
                     )}

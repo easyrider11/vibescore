@@ -96,8 +96,7 @@ export default function AnalyticsPage() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-28 animate-pulse rounded-2xl"
-              style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              className="h-28 animate-pulse card"
             />
           ))}
         </div>
@@ -105,8 +104,7 @@ export default function AnalyticsPage() {
           {[...Array(2)].map((_, i) => (
             <div
               key={i}
-              className="h-[300px] animate-pulse rounded-2xl"
-              style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              className="h-[300px] animate-pulse card"
             />
           ))}
         </div>
@@ -214,7 +212,7 @@ export default function AnalyticsPage() {
       {/* ── Status chips ── */}
       <section>
         <h2
-          className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+          className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]"
           style={{ color: "var(--text-tertiary)" }}
         >
           Session status

@@ -329,7 +329,7 @@ export default function NewSessionWizard() {
             />
             <div>
               <div className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Email invite to candidate</div>
-              <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+              <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
                 Automatically send {candidateEmail || "the candidate"} a link to start the interview.
               </div>
             </div>
