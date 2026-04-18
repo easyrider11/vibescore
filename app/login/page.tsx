@@ -82,11 +82,11 @@ function LoginForm() {
       style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
     >
       <div
-        className="w-full max-w-md rounded-[22px] p-8"
+        className="w-full max-w-md rounded-2xl p-8"
         style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
       >
         <div
-          className="text-[11px] font-semibold uppercase tracking-[0.24em]"
+          className="text-xs font-semibold uppercase tracking-[0.24em]"
           style={{ color: "var(--accent-cyan)" }}
         >
           Sign in
@@ -113,7 +113,7 @@ function LoginForm() {
 
         <label className="mt-6 block">
           <span
-            className="text-[11px] font-semibold uppercase tracking-[0.22em]"
+            className="text-xs font-semibold uppercase tracking-[0.22em]"
             style={{ color: "var(--text-tertiary)" }}
           >
             Work email

@@ -105,6 +105,12 @@ export default function CandidateWorkspace() {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [durationMin, setDurationMin] = useState<number>(45);
 
+  /* Pilot hardening: mobile gate, timeout warnings, anti-cheat telemetry */
+  const [viewportTooSmall, setViewportTooSmall] = useState(false);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const warnedRef = useRef<Set<number>>(new Set());
+  const LS_KEY = `bs:candidate:${publicId}`;
+
   useEffect(() => {
     if (!startTime || !durationMin) return;
     const totalSecs = durationMin * 60;
@@ -130,6 +136,133 @@ export default function CandidateWorkspace() {
   const timerColor = remaining === null ? "text-ide-text-secondary"
     : remaining > 600 ? "text-accent-green"
       : remaining > 300 ? "text-accent-orange" : "text-accent-red";
+
+  /* Mobile gate — the editor + copilot panels don't fit below ~1024px. */
+  useEffect(() => {
+    const check = () => setViewportTooSmall(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  /* Timeout warnings at 5min and 1min remaining. */
+  useEffect(() => {
+    if (remaining === null || sessionEnded) return;
+    const thresholds: Array<[number, string]> = [
+      [300, "5 minutes left. Wrap up and submit soon."],
+      [60, "1 minute left. Your work will auto-submit when the timer hits zero."],
+    ];
+    for (const [secs, msg] of thresholds) {
+      if (remaining <= secs && !warnedRef.current.has(secs)) {
+        warnedRef.current.add(secs);
+        setTimeWarning(msg);
+        setTimeout(() => setTimeWarning(null), 10000);
+      }
+    }
+  }, [remaining, sessionEnded]);
+
+  /* beforeunload warning while the session is active. */
+  useEffect(() => {
+    if (sessionEnded) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [sessionEnded]);
+
+  /* localStorage checkpoint — restore edits if the tab reloads. */
+  useEffect(() => {
+    if (!session || !publicId) return;
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        fileContents?: Record<string, string>;
+        clarificationNotes?: string;
+      };
+      if (saved.fileContents) {
+        setFileContents((prev) => ({ ...prev, ...saved.fileContents }));
+      }
+      if (saved.clarificationNotes) {
+        setClarificationNotes(saved.clarificationNotes);
+      }
+    } catch {
+      // Ignore corrupted local state.
+    }
+  }, [session, publicId, LS_KEY]);
+
+  useEffect(() => {
+    if (sessionEnded || !publicId) return;
+    const timer = setInterval(() => {
+      try {
+        localStorage.setItem(
+          LS_KEY,
+          JSON.stringify({ fileContents, clarificationNotes, savedAt: Date.now() }),
+        );
+      } catch {
+        // Storage quota or private mode — nothing we can do.
+      }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [fileContents, clarificationNotes, publicId, sessionEnded, LS_KEY]);
+
+  useEffect(() => {
+    if (sessionEnded) {
+      try {
+        localStorage.removeItem(LS_KEY);
+      } catch {
+        // Ignore.
+      }
+    }
+  }, [sessionEnded, LS_KEY]);
+
+  /* Anti-cheat signals: tab visibility + paste events. Recorded, not blocked. */
+  useEffect(() => {
+    if (!publicId || sessionEnded) return;
+
+    let visCount = 0;
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        visCount += 1;
+        fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: publicId,
+            type: "WINDOW_BLUR",
+            payload: { visCount, at: new Date().toISOString() },
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+    const onPaste = (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData("text") || "";
+      fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: publicId,
+          type: "PASTE",
+          payload: {
+            size: text.length,
+            preview: text.slice(0, 200),
+            at: new Date().toISOString(),
+          },
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("paste", onPaste);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("paste", onPaste);
+    };
+  }, [publicId, sessionEnded]);
 
   /* Load session */
   useEffect(() => {
@@ -608,7 +741,29 @@ export default function CandidateWorkspace() {
       <main className="flex h-screen items-center justify-center" style={{ background: "var(--bg-primary)" }}>
         <div className="text-center">
           <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-accent-blue border-t-transparent mx-auto" />
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{status || "Loading workspace..."}</p>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{status || "Loading workspace…"}</p>
+        </div>
+      </main>
+    );
+  }
+
+  /* ── Mobile / narrow viewport gate ── */
+  if (viewportTooSmall) {
+    return (
+      <main
+        className="flex h-screen flex-col items-center justify-center p-6 text-center"
+        style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
+      >
+        <div className="max-w-sm space-y-4">
+          <div className="font-display text-2xl font-semibold">Please open on desktop</div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            This interview uses a full code editor and a copilot panel that don&rsquo;t fit on
+            a phone or tablet. Reopen the email link on a laptop or desktop and you&rsquo;ll
+            pick up where you left off.
+          </p>
+          <p className="text-xs font-mono tabular" style={{ color: "var(--text-tertiary)" }}>
+            Session · {publicId.slice(0, 10)}…
+          </p>
         </div>
       </main>
     );
@@ -619,6 +774,22 @@ export default function CandidateWorkspace() {
   /* ── Render ── */
   return (
     <div className="flex h-screen flex-col overflow-hidden font-body" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+      {/* Timeout warning toast */}
+      {timeWarning && !sessionEnded && (
+        <div
+          role="status"
+          aria-live="assertive"
+          className="absolute left-1/2 top-14 z-50 -translate-x-1/2 rounded-lg px-4 py-2.5 text-sm font-semibold"
+          style={{
+            background: "var(--accent-orange)",
+            color: "#0e1117",
+            boxShadow: "0 16px 40px rgba(0,0,0,0.4)",
+          }}
+        >
+          {timeWarning}
+        </div>
+      )}
+
       {/* Session ended overlay */}
       {sessionEnded && (
         <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(14,17,23,0.95)" }}>
@@ -708,17 +879,17 @@ export default function CandidateWorkspace() {
           <span className="text-xs truncate max-w-[300px]" style={{ color: "var(--text-primary)" }}>{session.scenario.title}</span>
           <div className="flex items-center gap-1 ml-2">
             <div className="presence-avatar" style={{ background: "linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))" }}>
-              <span className="text-white text-[9px]">{(session.candidateName || "C")[0].toUpperCase()}</span>
+              <span className="text-white text-[10px]">{(session.candidateName || "C")[0].toUpperCase()}</span>
               <span className="presence-dot" style={{ background: "var(--status-active)" }} />
             </div>
             {remoteUsers.map((u, i) => (
               <div key={i} className="presence-avatar" style={{ background: u.color }} title={`${u.name}${u.filePath ? ` — viewing ${u.filePath}` : ""}`}>
-                <span className="text-white text-[9px]">{u.name[0]?.toUpperCase()}</span>
+                <span className="text-white text-[10px]">{u.name[0]?.toUpperCase()}</span>
                 <span className="presence-dot" style={{ background: "var(--status-active)" }} />
               </div>
             ))}
             {collabConnected && (
-              <span className="text-[9px] ml-1" style={{ color: "var(--accent-green)" }}>Live</span>
+              <span className="text-[10px] ml-1" style={{ color: "var(--accent-green)" }}>Live</span>
             )}
           </div>
         </div>
@@ -756,7 +927,7 @@ export default function CandidateWorkspace() {
               <input className="w-full rounded-md px-2 py-1 text-xs focus:outline-none font-mono" style={{ background: "var(--bg-primary)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} placeholder="Search in files..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && searchRepo()} />
               <div className="space-y-0.5 max-h-[calc(100vh-200px)] overflow-auto ide-scrollbar">
                 {searchResults.map((r, i) => (
-                  <button key={`${r.path}-${i}`} className="w-full text-left rounded px-2 py-1 text-[11px] truncate" style={{ color: "var(--text-secondary)" }} onClick={() => { openFile(r.path); setShowSearch(false); }}>
+                  <button key={`${r.path}-${i}`} className="w-full text-left rounded px-2 py-1 text-xs truncate" style={{ color: "var(--text-secondary)" }} onClick={() => { openFile(r.path); setShowSearch(false); }}>
                     <span className="text-accent-blue">{r.path}</span><span style={{ color: "var(--text-tertiary)" }}>:{r.line}</span>
                   </button>
                 ))}
@@ -778,7 +949,7 @@ export default function CandidateWorkspace() {
             <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Tasks</span>
             <ul className="space-y-1">
               {session.scenario.tasks.map((task: string, i: number) => (
-                <li key={i} className="text-[11px] leading-tight" style={{ color: "var(--text-secondary)" }}>
+                <li key={i} className="text-xs leading-tight" style={{ color: "var(--text-secondary)" }}>
                   <span className="text-accent-blue mr-1">{i + 1}.</span>{task}
                 </li>
               ))}
@@ -794,9 +965,9 @@ export default function CandidateWorkspace() {
               const fi = fileIcon(tab);
               return (
                 <div key={tab} className="group flex items-center gap-1.5 px-3 py-1.5 text-xs cursor-pointer shrink-0 transition-colors" style={{ background: tab === activeFile ? "var(--bg-primary)" : "transparent", color: tab === activeFile ? "var(--text-primary)" : "var(--text-secondary)", borderRight: "1px solid var(--border-default)", borderBottom: tab === activeFile ? "2px solid var(--accent-blue)" : "2px solid transparent" }} onClick={() => openFile(tab)}>
-                  <span className={`text-[9px] font-mono font-semibold ${fi.color}`}>{fi.icon}</span>
+                  <span className={`text-[10px] font-mono font-semibold ${fi.color}`}>{fi.icon}</span>
                   <span>{tab.split("/").pop()}</span>
-                  {saving && tab === activeFile && <span className="text-[9px] text-accent-orange">...</span>}
+                  {saving && tab === activeFile && <span className="text-[10px] text-accent-orange">...</span>}
                   <button onClick={(e) => { e.stopPropagation(); closeTab(tab); }} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-[10px]" style={{ color: "var(--text-tertiary)" }}>x</button>
                 </div>
               );
@@ -861,7 +1032,7 @@ export default function CandidateWorkspace() {
         <aside className="flex w-[380px] shrink-0 flex-col" style={{ background: "var(--bg-surface)", borderLeft: "1px solid var(--border-default)" }}>
           <div className="flex h-9 items-center" style={{ borderBottom: "1px solid var(--border-default)" }}>
             {(["chat", "notes", "tasks"] as const).map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab)} className="flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider transition-colors" style={{ color: activeTab === tab ? "var(--accent-blue)" : "var(--text-tertiary)", borderBottom: activeTab === tab ? "2px solid var(--accent-blue)" : "2px solid transparent" }}>
+              <button key={tab} onClick={() => setActiveTab(tab)} className="flex-1 py-2 text-xs font-semibold uppercase tracking-wider transition-colors" style={{ color: activeTab === tab ? "var(--accent-blue)" : "var(--text-tertiary)", borderBottom: activeTab === tab ? "2px solid var(--accent-blue)" : "2px solid transparent" }}>
                 {tab === "chat" ? "AI Copilot" : tab === "notes" ? "Notes" : "Task Brief"}
               </button>
             ))}
@@ -890,7 +1061,7 @@ export default function CandidateWorkspace() {
                     </p>
                     <div className="mt-4 space-y-1.5 w-full">
                       {["Summarize this codebase", "Explain the current file", "Suggest tests for this code", "Review my changes"].map((s) => (
-                        <button key={s} onClick={() => setChatInput(s)} className="block w-full text-left rounded-lg px-3 py-2 text-[11px] transition-colors" style={{ background: "var(--bg-primary)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>
+                        <button key={s} onClick={() => setChatInput(s)} className="block w-full text-left rounded-lg px-3 py-2 text-xs transition-colors" style={{ background: "var(--bg-primary)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>
                           {s}
                         </button>
                       ))}
@@ -903,16 +1074,16 @@ export default function CandidateWorkspace() {
                     <div className="max-w-[90%]">
                       {msg.role === "user" ? (
                         <div className="rounded-xl px-3 py-2 text-xs leading-relaxed" style={{ background: "rgba(59,130,246,0.15)", color: "var(--accent-cyan)" }}>
-                          {msg.contextFiles?.length ? <span className="mb-1 block text-[9px]" style={{ color: "var(--text-tertiary)" }}>@{msg.contextFiles.join(", @")}</span> : null}
+                          {msg.contextFiles?.length ? <span className="mb-1 block text-[10px]" style={{ color: "var(--text-tertiary)" }}>@{msg.contextFiles.join(", @")}</span> : null}
                           <div className="whitespace-pre-wrap">{msg.content}</div>
-                          <span className="mt-1 block text-[9px]" style={{ color: "var(--text-tertiary)" }}>{msg.timestamp.toLocaleTimeString()}</span>
+                          <span className="mt-1 block text-[10px]" style={{ color: "var(--text-tertiary)" }}>{msg.timestamp.toLocaleTimeString()}</span>
                         </div>
                       ) : (
                         <div>
                           <div className="flex items-center gap-1.5 mb-1">
                             <span className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold text-white" style={{ background: "linear-gradient(135deg, var(--accent-purple), var(--accent-pink))" }}>AI</span>
-                            <span className="text-[9px] font-semibold uppercase" style={{ color: "var(--text-tertiary)" }}>{msg.mode}</span>
-                            {msg.streaming && <span className="text-[9px] text-accent-purple animate-pulse">streaming...</span>}
+                            <span className="text-[10px] font-semibold uppercase" style={{ color: "var(--text-tertiary)" }}>{msg.mode}</span>
+                            {msg.streaming && <span className="text-[10px] text-accent-purple animate-pulse">streaming...</span>}
                           </div>
                           <div className="rounded-xl px-3 py-2 text-xs leading-relaxed" style={{ background: "var(--bg-surface-alt)", color: "var(--text-primary)" }}>
                             {!msg.streaming ? parseCodeBlocks(msg.content).map((block, bi) =>
@@ -957,7 +1128,7 @@ export default function CandidateWorkspace() {
               {/* Context pills + input */}
               <div className="p-3" style={{ borderTop: "1px solid var(--border-default)" }}>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>Context:</span>
+                  <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>Context:</span>
                   {(["current-file", "codebase", "selection"] as ContextTag[]).map((ctx) => (
                     <button key={ctx} onClick={() => toggleContext(ctx)} className={`context-pill ${activeContexts.has(ctx) ? "active" : ""}`}>@{ctx}</button>
                   ))}
@@ -968,7 +1139,7 @@ export default function CandidateWorkspace() {
                     Send
                   </button>
                 </div>
-                <p className="mt-1 text-[9px]" style={{ color: "var(--text-tertiary)" }}>
+                <p className="mt-1 text-[10px]" style={{ color: "var(--text-tertiary)" }}>
                   Enter to send, Shift+Enter for newline. {chatMessages.filter((m) => m.role === "user").length} queries used.
                 </p>
               </div>

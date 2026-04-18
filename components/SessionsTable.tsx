@@ -119,13 +119,13 @@ export function SessionsTable({ sessions }: { sessions: SessionRow[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Candidate</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Position</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Template</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Status</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Decision</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Date</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Actions</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Candidate</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Position</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Template</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Status</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Decision</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Date</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-tertiary)" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -164,7 +164,7 @@ export function SessionsTable({ sessions }: { sessions: SessionRow[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium"
+                        className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
                         style={{ background: sc.bg, color: sc.text }}
                       >
                         {s.status}
@@ -173,7 +173,7 @@ export function SessionsTable({ sessions }: { sessions: SessionRow[] }) {
                     <td className="px-4 py-3">
                       {dc ? (
                         <span
-                          className="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium"
+                          className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
                           style={{ background: dc.bg, color: dc.text }}
                         >
                           {s.decision}
@@ -189,7 +189,7 @@ export function SessionsTable({ sessions }: { sessions: SessionRow[] }) {
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => copyLink(s.publicToken)}
-                          className="rounded px-2 py-1 text-[11px] font-medium transition-colors"
+                          className="rounded px-2 py-1 text-xs font-medium transition-colors"
                           style={{
                             background: copiedToken === s.publicToken ? "rgba(63,185,80,0.15)" : "var(--bg-surface-alt)",
                             color: copiedToken === s.publicToken ? "var(--accent-green)" : "var(--text-secondary)",
@@ -201,7 +201,7 @@ export function SessionsTable({ sessions }: { sessions: SessionRow[] }) {
                         {s.status === "active" && (
                           <button
                             onClick={() => router.push(`/app/sessions/${s.id}/live`)}
-                            className="rounded px-2 py-1 text-[11px] font-medium"
+                            className="rounded px-2 py-1 text-xs font-medium"
                             style={{ background: "rgba(63,185,80,0.15)", color: "var(--accent-green)" }}
                           >
                             Live

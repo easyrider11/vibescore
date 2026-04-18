@@ -230,7 +230,7 @@ export default function SettingsPage() {
         {/* Save button */}
         <div className="pt-2">
           <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Settings"}
+            {saving ? "Saving…" : "Save Settings"}
           </button>
           {!isAdmin && (
             <p className="text-[10px] mt-2" style={{ color: "var(--text-tertiary)" }}>

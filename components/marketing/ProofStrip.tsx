@@ -15,7 +15,7 @@ export function ProofStrip({ items }: ProofStripProps) {
       {items.map((item) => (
         <span
           key={item}
-          className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-medium"
+          className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
           style={{ background: "var(--bg-surface-alt)", color: "var(--text-secondary)" }}
         >
           <span

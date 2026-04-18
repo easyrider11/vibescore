@@ -2,18 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { HeroProductPreview } from "../components/marketing/HeroProductPreview";
 import { MarketingCtaBanner } from "../components/marketing/MarketingCtaBanner";
 import { MarketingNav } from "../components/marketing/MarketingNav";
 import { PricingPackageCard } from "../components/marketing/PricingPackageCard";
 import { ProofStrip } from "../components/marketing/ProofStrip";
-import {
-  differentiators,
-  marketingCtas,
-  pricingPackages,
-  proofPoints,
-  teamOutcomes,
-  workflowSteps,
-} from "../lib/marketing";
+import { TryDemoButton } from "../components/marketing/TryDemoButton";
+import { marketingCtas, pricingPackages, proofPoints } from "../lib/marketing";
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -48,21 +43,19 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-6xl">
             <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
               <div>
-                <div className="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ background: "rgba(59,130,246,0.12)", color: "var(--accent-cyan)" }}>
-                  AI-native technical interviews
-                </div>
-                <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold tracking-tight md:text-7xl">
-                  Evaluate real AI-assisted engineering work, not whiteboard performance.
+                <h1 className="max-w-3xl font-display text-5xl font-semibold tracking-tight md:text-7xl">
+                  Hire the engineers who build well <em className="not-italic" style={{ color: "var(--accent-cyan)" }}>with AI</em>.
                 </h1>
-                <p className="mt-6 max-w-2xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
-                  Buildscore gives hiring teams a structured way to watch how candidates navigate real code, collaborate with AI, and justify engineering decisions under realistic interview pressure.
+                <p className="mt-6 max-w-xl text-base leading-7 md:text-lg" style={{ color: "var(--text-secondary)" }}>
+                  A real codebase. A real copilot. A timeline of every prompt, test run, and file open. Then you decide.
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <TryDemoButton label="Try the interactive demo" variant="primary" />
                   <Link
                     href={marketingCtas.primary.href}
-                    className="rounded-lg px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "var(--accent-blue)" }}
+                    className="rounded-lg px-5 py-3 text-sm font-semibold transition-colors"
+                    style={{ color: "var(--text-primary)", border: "1px solid var(--border-default)" }}
                   >
                     {marketingCtas.primary.label}
                   </Link>
@@ -74,92 +67,36 @@ export default function LandingPage() {
                     {marketingCtas.secondary.label}
                   </Link>
                 </div>
+                <p className="mt-3 max-w-xl text-xs" style={{ color: "var(--text-tertiary)" }}>
+                  Spins up a fake workspace with 9 seeded candidates. No signup. No email.
+                </p>
 
                 <div className="mt-8 max-w-2xl">
                   <ProofStrip items={proofPoints} />
                 </div>
               </div>
 
-              <SignalPanel />
+              <HeroProductPreview />
             </div>
           </div>
         </section>
 
         <section className="px-6 py-20 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="Why teams switch"
-              title="The interview moves from interviewer memory to reviewable evidence."
-              description="Replace one-off coding puzzles with structured interview signals that are easier to compare, share, and defend."
-            />
-
-            <div className="mt-12 grid gap-5 lg:grid-cols-3">
-              {teamOutcomes.map((outcome) => (
-                <div
-                  key={outcome.title}
-                  className="rounded-[24px] p-6"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-                >
-                  <h3 className="font-display text-2xl font-semibold tracking-tight">{outcome.title}</h3>
-                  <p className="mt-4 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-                    {outcome.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 py-20 md:px-12" style={{ background: "linear-gradient(180deg, rgba(22,27,34,0), rgba(22,27,34,0.48))" }}>
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="How it works"
-              title="A hiring workflow designed for realistic technical work."
-              description="From session setup to final review, each step is meant to create higher-confidence decisions without adding coordinator overhead."
-            />
-
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {workflowSteps.map((step, index) => (
-                <div
-                  key={step.title}
-                  className="rounded-[24px] p-6"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-                >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
-                    0{index + 1}
-                  </div>
-                  <h3 className="mt-4 font-display text-2xl font-semibold tracking-tight">{step.title}</h3>
-                  <p className="mt-4 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 py-20 md:px-12">
-          <div className="mx-auto max-w-6xl">
-            <SectionHeading
-              eyebrow="Differentiators"
-              title="Built for structured hiring loops, not generic coding challenges."
-              description="The product stays close to how modern engineering teams actually interview: real tasks, AI in the loop, reviewer context preserved."
-            />
-
-            <div className="mt-12 grid gap-5 md:grid-cols-2">
-              {differentiators.map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-[24px] p-6"
-                  style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-                >
-                  <h3 className="font-display text-xl font-semibold tracking-tight">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6" style={{ color: "var(--text-secondary)" }}>
-                    {item.description}
-                  </p>
-                </div>
-              ))}
-            </div>
+          <div className="mx-auto max-w-5xl">
+            <h2 className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
+              What we record while the candidate works.
+            </h2>
+            <p className="mt-6 max-w-2xl text-base leading-7" style={{ color: "var(--text-secondary)" }}>
+              Every keystroke, AI prompt, file open, and test run lands in one timeline. When you open the report, you can answer the only questions that matter: did they understand the problem, and did they use AI like a senior would?
+            </p>
+            <ul className="mt-10 grid gap-2 text-sm leading-7 md:grid-cols-2" style={{ color: "var(--text-secondary)" }}>
+              <li>· AI prompts and responses, per mode, with token counts</li>
+              <li>· Every test run and its output</li>
+              <li>· Files opened and the order they were opened in</li>
+              <li>· Each submission diff against the starting repo</li>
+              <li>· Interviewer rubric scores + an AI second-opinion grade</li>
+              <li>· Public report link you can share with the rest of the panel</li>
+            </ul>
           </div>
         </section>
 
@@ -189,7 +126,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-6 pb-24 pt-10 md:px-12">
+        <section className="px-6 pb-16 pt-10 md:px-12">
           <div className="mx-auto max-w-6xl">
             <MarketingCtaBanner
               eyebrow="See the workflow live"
@@ -200,6 +137,22 @@ export default function LandingPage() {
             />
           </div>
         </section>
+
+        <footer
+          className="px-6 pb-10 pt-6 md:px-12"
+          style={{ borderTop: "1px solid var(--border-default)" }}
+        >
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
+            <span translate="no" className="font-semibold">Buildscore</span>
+            <div className="flex items-center gap-5 flex-wrap">
+              <Link href="/pricing" style={{ color: "inherit" }}>Pricing</Link>
+              <Link href="/changelog" style={{ color: "inherit" }}>Changelog</Link>
+              <Link href="/privacy" style={{ color: "inherit" }}>Privacy</Link>
+              <Link href="/terms" style={{ color: "inherit" }}>Terms</Link>
+              <Link href={marketingCtas.primary.href} style={{ color: "inherit" }}>{marketingCtas.primary.label}</Link>
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   );
@@ -216,7 +169,7 @@ function SectionHeading({
 }) {
   return (
     <div className="max-w-3xl">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
+      <div className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
         {eyebrow}
       </div>
       <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight md:text-5xl">{title}</h2>
@@ -227,89 +180,3 @@ function SectionHeading({
   );
 }
 
-function SignalPanel() {
-  return (
-    <div
-      className="relative overflow-hidden rounded-[28px] p-5 md:p-6"
-      style={{
-        background: "linear-gradient(180deg, rgba(22,27,34,0.96), rgba(14,17,23,0.98))",
-        border: "1px solid rgba(42,49,66,0.8)",
-        boxShadow: "0 28px 90px rgba(0,0,0,0.38)",
-      }}
-    >
-      <div className="flex items-center justify-between pb-4" style={{ borderBottom: "1px solid rgba(42,49,66,0.75)" }}>
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--text-tertiary)" }}>
-            Review surface
-          </div>
-          <div className="mt-1 font-display text-2xl font-semibold tracking-tight">Candidate session evidence</div>
-        </div>
-        <span className="chip chip-blue">Live demo</span>
-      </div>
-
-      <div className="mt-5 grid gap-4">
-        <div className="rounded-[20px] p-4" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-subtle)" }}>
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold">Prompt timeline</div>
-            <span className="chip chip-purple">AI usage</span>
-          </div>
-          <div className="mt-4 space-y-3 text-sm" style={{ color: "var(--text-secondary)" }}>
-            <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px]" style={{ color: "var(--text-tertiary)" }}>
-                08:14
-              </span>
-              <p>Candidate asks for a refactor path, then verifies the proposed data flow before editing.</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px]" style={{ color: "var(--text-tertiary)" }}>
-                12:09
-              </span>
-              <p>Prompt shifts toward test strategy instead of direct code generation, which is preserved for reviewer context.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[20px] p-4" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-subtle)" }}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Code diff</div>
-              <span className="chip chip-green">5 files changed</span>
-            </div>
-            <div className="mt-4 font-mono text-[12px] leading-6" style={{ color: "var(--text-secondary)" }}>
-              <div>
-                <span style={{ color: "var(--accent-red)" }}>-</span> inline inventory check
-              </div>
-              <div>
-                <span style={{ color: "var(--accent-green)" }}>+</span> extracted stock validator
-              </div>
-              <div>
-                <span style={{ color: "var(--accent-green)" }}>+</span> added notifier adapter tests
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[20px] p-4" style={{ background: "var(--bg-inset)", border: "1px solid var(--border-subtle)" }}>
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Reviewer summary</div>
-              <span className="chip chip-orange">Structured rubric</span>
-            </div>
-            <div className="mt-4 space-y-3 text-sm" style={{ color: "var(--text-secondary)" }}>
-              <div className="flex items-center justify-between">
-                <span>Problem solving</span>
-                <strong style={{ color: "var(--text-primary)" }}>4 / 5</strong>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>AI collaboration</span>
-                <strong style={{ color: "var(--text-primary)" }}>5 / 5</strong>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Code quality</span>
-                <strong style={{ color: "var(--text-primary)" }}>4 / 5</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

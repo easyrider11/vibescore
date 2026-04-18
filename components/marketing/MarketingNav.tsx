@@ -19,7 +19,7 @@ export function MarketingNav({ primaryCta, secondaryCta, scrolled = false }: Mar
     >
       <Link href="/" className="flex items-center gap-3">
         <div
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-[11px] font-bold text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold text-white"
           style={{ background: "linear-gradient(135deg, var(--accent-blue), var(--accent-purple))" }}
         >
           B
@@ -27,7 +27,7 @@ export function MarketingNav({ primaryCta, secondaryCta, scrolled = false }: Mar
         <div>
           <div className="font-display text-base font-semibold tracking-tight">buildscore</div>
           <div className="text-[10px] uppercase tracking-[0.22em]" style={{ color: "var(--text-tertiary)" }}>
-            AI-native hiring
+            Interviews for the AI era
           </div>
         </div>
       </Link>
