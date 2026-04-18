@@ -102,6 +102,33 @@ const scenarios = [
     timeLimitMin: 45,
   },
   {
+    slug: "agent-loop-fix",
+    title: "AI-native: Fix a broken LLM agent loop",
+    description:
+      "Debug a tool-calling agent that runs away and ignores tool outputs. Fix the loop, explain the blast radius, and outline what you'd add next.",
+    background:
+      "A small LLM agent product has two incidents in flight: some sessions loop forever and burn budget, and tool results frequently fail to propagate into the final answer. The agent core is small but subtly broken.",
+    tasks: [
+      "Read lib/agent.js and identify both bugs in the tool-calling loop",
+      "Fix the loop so it terminates and so tool outputs reach the model",
+      "Describe what you would add next (evals, tracing, cost guard)",
+    ],
+    hints: [
+      "Check how messages are appended after a tool call — the model needs to see them",
+      "The max-steps guard has a typing bug; it never fires as written",
+      "Use AI freely for explain/review modes, but own the diagnosis yourself",
+    ],
+    evaluationPoints: [
+      "Locates both bugs and explains why each matters in production",
+      "Fix is minimal and correct; tests in tests/agent.test.js pass",
+      "Articulates follow-ups: evals, tracing, cost ceilings, retry policy",
+      "Uses AI as a thinking partner rather than to guess at the fix",
+    ],
+    rubric: defaultRubric,
+    aiPolicy: defaultAiPolicy,
+    timeLimitMin: 60,
+  },
+  {
     slug: "needs-review-status",
     title: "Feature: Add Needs Review status to session list",
     description: "Add a derived status so reviewers can quickly spot completed sessions that still need manual review.",

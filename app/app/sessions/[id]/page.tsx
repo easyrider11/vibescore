@@ -91,6 +91,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link href={`/app/sessions/${session.id}/live`} className="btn btn-ghost btn-sm">Live View</Link>
+          <Link href={`/app/sessions/${session.id}/report`} className="btn btn-primary btn-sm">View Report</Link>
           <Link href={`/s/${session.publicToken}`} className="btn btn-ghost btn-sm">Candidate Link</Link>
           <a href={`/api/export?sessionId=${session.id}`} className="btn btn-ghost btn-sm">Export JSON</a>
         </div>

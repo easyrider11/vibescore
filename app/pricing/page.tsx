@@ -2,6 +2,7 @@ import { MarketingCtaBanner } from "../../components/marketing/MarketingCtaBanne
 import { MarketingFAQ } from "../../components/marketing/MarketingFAQ";
 import { MarketingNav } from "../../components/marketing/MarketingNav";
 import { PricingPackageCard } from "../../components/marketing/PricingPackageCard";
+import { TryDemoButton } from "../../components/marketing/TryDemoButton";
 import {
   marketingCtas,
   pricingAudienceBands,
@@ -35,10 +36,11 @@ export default function PricingPage() {
               Buildscore is priced to support serious buying conversations. Start free if you want to validate the workflow, then move into Pro or Enterprise when hiring volume, security, and rollout complexity increase.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <TryDemoButton label="Try an interactive demo" variant="primary" />
               <a
                 href={marketingCtas.primary.href}
-                className="rounded-lg px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: "var(--accent-blue)" }}
+                className="rounded-lg px-5 py-3 text-sm font-semibold transition-colors"
+                style={{ color: "var(--text-primary)", border: "1px solid var(--border-default)" }}
               >
                 {marketingCtas.primary.label}
               </a>
@@ -50,6 +52,9 @@ export default function PricingPage() {
                 {marketingCtas.secondary.label}
               </a>
             </div>
+            <p className="mx-auto mt-3 max-w-2xl text-xs" style={{ color: "var(--text-tertiary)" }}>
+              Spins up a populated workspace with 9 sample candidate sessions, AI-graded, in about two seconds. No signup.
+            </p>
           </div>
         </section>
 

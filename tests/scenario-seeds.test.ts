@@ -20,6 +20,12 @@ describe("scenario catalog", () => {
     expect(slugs).toContain("review-summary-bug");
     expect(slugs).toContain("needs-review-status");
   });
+
+  it("ships the AI-native agent-loop-fix scenario", async () => {
+    const { scenarios } = await loadScenarioCatalog();
+    const slugs = scenarios.map((scenario) => scenario.slug);
+    expect(slugs).toContain("agent-loop-fix");
+  });
 });
 
 describe("scenario seed workspaces", () => {
@@ -33,6 +39,22 @@ describe("scenario seed workspaces", () => {
       "lib/session-state.js",
       "lib/reviewer-summary.js",
       "tests/reviewer-summary.test.js",
+    ];
+
+    for (const file of expectedFiles) {
+      expect(fs.existsSync(path.join(scenarioRoot, file))).toBe(true);
+    }
+  });
+
+  it("ships a multi-file AI-native agent-loop workspace", () => {
+    const scenarioRoot = path.join(repoRoot, "seeds", "scenarios", "agent-loop-fix");
+    const expectedFiles = [
+      "notes.md",
+      "api/run-agent.js",
+      "lib/agent.js",
+      "lib/mock-model.js",
+      "lib/tools.js",
+      "tests/agent.test.js",
     ];
 
     for (const file of expectedFiles) {

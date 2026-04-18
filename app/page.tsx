@@ -6,6 +6,7 @@ import { MarketingCtaBanner } from "../components/marketing/MarketingCtaBanner";
 import { MarketingNav } from "../components/marketing/MarketingNav";
 import { PricingPackageCard } from "../components/marketing/PricingPackageCard";
 import { ProofStrip } from "../components/marketing/ProofStrip";
+import { TryDemoButton } from "../components/marketing/TryDemoButton";
 import {
   differentiators,
   marketingCtas,
@@ -59,10 +60,11 @@ export default function LandingPage() {
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <TryDemoButton label="Try the interactive demo" variant="primary" />
                   <Link
                     href={marketingCtas.primary.href}
-                    className="rounded-lg px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "var(--accent-blue)" }}
+                    className="rounded-lg px-5 py-3 text-sm font-semibold transition-colors"
+                    style={{ color: "var(--text-primary)", border: "1px solid var(--border-default)" }}
                   >
                     {marketingCtas.primary.label}
                   </Link>
@@ -74,6 +76,9 @@ export default function LandingPage() {
                     {marketingCtas.secondary.label}
                   </Link>
                 </div>
+                <p className="mt-3 max-w-xl text-xs" style={{ color: "var(--text-tertiary)" }}>
+                  Provisions a fully populated recruiter workspace — 9 sample candidate sessions, AI grades, shareable reports — in about two seconds. No signup.
+                </p>
 
                 <div className="mt-8 max-w-2xl">
                   <ProofStrip items={proofPoints} />
