@@ -271,6 +271,9 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                   path?: string;
                   question?: string;
                   passed?: boolean;
+                  size?: number;
+                  preview?: string;
+                  visCount?: number;
                 }>(event.payload, {});
                 let detail = "";
                 if (event.type === "AI_CHAT" && payload.mode) {
@@ -279,6 +282,10 @@ export function SessionReport({ session, variant = "authenticated", shareUrl }: 
                   detail = payload.path;
                 } else if (event.type === "RUN_TESTS") {
                   detail = payload.passed ? "passed" : "ran";
+                } else if (event.type === "PASTE") {
+                  detail = `${payload.size ?? 0} chars${payload.preview ? ` · ${payload.preview.slice(0, 80)}` : ""}`;
+                } else if (event.type === "WINDOW_BLUR") {
+                  detail = `tab switch #${payload.visCount ?? "?"}`;
                 }
                 return (
                   <li key={event.id}

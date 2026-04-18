@@ -105,6 +105,12 @@ export default function CandidateWorkspace() {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [durationMin, setDurationMin] = useState<number>(45);
 
+  /* Pilot hardening: mobile gate, timeout warnings, anti-cheat telemetry */
+  const [viewportTooSmall, setViewportTooSmall] = useState(false);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const warnedRef = useRef<Set<number>>(new Set());
+  const LS_KEY = `bs:candidate:${publicId}`;
+
   useEffect(() => {
     if (!startTime || !durationMin) return;
     const totalSecs = durationMin * 60;
@@ -130,6 +136,133 @@ export default function CandidateWorkspace() {
   const timerColor = remaining === null ? "text-ide-text-secondary"
     : remaining > 600 ? "text-accent-green"
       : remaining > 300 ? "text-accent-orange" : "text-accent-red";
+
+  /* Mobile gate — the editor + copilot panels don't fit below ~1024px. */
+  useEffect(() => {
+    const check = () => setViewportTooSmall(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  /* Timeout warnings at 5min and 1min remaining. */
+  useEffect(() => {
+    if (remaining === null || sessionEnded) return;
+    const thresholds: Array<[number, string]> = [
+      [300, "5 minutes left. Wrap up and submit soon."],
+      [60, "1 minute left. Your work will auto-submit when the timer hits zero."],
+    ];
+    for (const [secs, msg] of thresholds) {
+      if (remaining <= secs && !warnedRef.current.has(secs)) {
+        warnedRef.current.add(secs);
+        setTimeWarning(msg);
+        setTimeout(() => setTimeWarning(null), 10000);
+      }
+    }
+  }, [remaining, sessionEnded]);
+
+  /* beforeunload warning while the session is active. */
+  useEffect(() => {
+    if (sessionEnded) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [sessionEnded]);
+
+  /* localStorage checkpoint — restore edits if the tab reloads. */
+  useEffect(() => {
+    if (!session || !publicId) return;
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as {
+        fileContents?: Record<string, string>;
+        clarificationNotes?: string;
+      };
+      if (saved.fileContents) {
+        setFileContents((prev) => ({ ...prev, ...saved.fileContents }));
+      }
+      if (saved.clarificationNotes) {
+        setClarificationNotes(saved.clarificationNotes);
+      }
+    } catch {
+      // Ignore corrupted local state.
+    }
+  }, [session, publicId, LS_KEY]);
+
+  useEffect(() => {
+    if (sessionEnded || !publicId) return;
+    const timer = setInterval(() => {
+      try {
+        localStorage.setItem(
+          LS_KEY,
+          JSON.stringify({ fileContents, clarificationNotes, savedAt: Date.now() }),
+        );
+      } catch {
+        // Storage quota or private mode — nothing we can do.
+      }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [fileContents, clarificationNotes, publicId, sessionEnded, LS_KEY]);
+
+  useEffect(() => {
+    if (sessionEnded) {
+      try {
+        localStorage.removeItem(LS_KEY);
+      } catch {
+        // Ignore.
+      }
+    }
+  }, [sessionEnded, LS_KEY]);
+
+  /* Anti-cheat signals: tab visibility + paste events. Recorded, not blocked. */
+  useEffect(() => {
+    if (!publicId || sessionEnded) return;
+
+    let visCount = 0;
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        visCount += 1;
+        fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: publicId,
+            type: "WINDOW_BLUR",
+            payload: { visCount, at: new Date().toISOString() },
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+    const onPaste = (e: ClipboardEvent) => {
+      const text = e.clipboardData?.getData("text") || "";
+      fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: publicId,
+          type: "PASTE",
+          payload: {
+            size: text.length,
+            preview: text.slice(0, 200),
+            at: new Date().toISOString(),
+          },
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("paste", onPaste);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("paste", onPaste);
+    };
+  }, [publicId, sessionEnded]);
 
   /* Load session */
   useEffect(() => {
@@ -608,7 +741,29 @@ export default function CandidateWorkspace() {
       <main className="flex h-screen items-center justify-center" style={{ background: "var(--bg-primary)" }}>
         <div className="text-center">
           <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-accent-blue border-t-transparent mx-auto" />
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{status || "Loading workspace..."}</p>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{status || "Loading workspace…"}</p>
+        </div>
+      </main>
+    );
+  }
+
+  /* ── Mobile / narrow viewport gate ── */
+  if (viewportTooSmall) {
+    return (
+      <main
+        className="flex h-screen flex-col items-center justify-center p-6 text-center"
+        style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}
+      >
+        <div className="max-w-sm space-y-4">
+          <div className="font-display text-2xl font-semibold">Please open on desktop</div>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            This interview uses a full code editor and a copilot panel that don&rsquo;t fit on
+            a phone or tablet. Reopen the email link on a laptop or desktop and you&rsquo;ll
+            pick up where you left off.
+          </p>
+          <p className="text-xs font-mono tabular" style={{ color: "var(--text-tertiary)" }}>
+            Session · {publicId.slice(0, 10)}…
+          </p>
         </div>
       </main>
     );
@@ -619,6 +774,22 @@ export default function CandidateWorkspace() {
   /* ── Render ── */
   return (
     <div className="flex h-screen flex-col overflow-hidden font-body" style={{ background: "var(--bg-primary)", color: "var(--text-primary)" }}>
+      {/* Timeout warning toast */}
+      {timeWarning && !sessionEnded && (
+        <div
+          role="status"
+          aria-live="assertive"
+          className="absolute left-1/2 top-14 z-50 -translate-x-1/2 rounded-lg px-4 py-2.5 text-sm font-semibold"
+          style={{
+            background: "var(--accent-orange)",
+            color: "#0e1117",
+            boxShadow: "0 16px 40px rgba(0,0,0,0.4)",
+          }}
+        >
+          {timeWarning}
+        </div>
+      )}
+
       {/* Session ended overlay */}
       {sessionEnded && (
         <div className="absolute inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(14,17,23,0.95)" }}>

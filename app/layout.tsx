@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
+import { ClientErrorReporter } from "../components/ClientErrorReporter";
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <ClientErrorReporter />
         {children}
       </body>
     </html>

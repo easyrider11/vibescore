@@ -144,9 +144,11 @@ export default function LandingPage() {
         >
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-xs" style={{ color: "var(--text-tertiary)" }}>
             <span translate="no" className="font-semibold">Buildscore</span>
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-5 flex-wrap">
               <Link href="/pricing" style={{ color: "inherit" }}>Pricing</Link>
               <Link href="/changelog" style={{ color: "inherit" }}>Changelog</Link>
+              <Link href="/privacy" style={{ color: "inherit" }}>Privacy</Link>
+              <Link href="/terms" style={{ color: "inherit" }}>Terms</Link>
               <Link href={marketingCtas.primary.href} style={{ color: "inherit" }}>{marketingCtas.primary.label}</Link>
             </div>
           </div>

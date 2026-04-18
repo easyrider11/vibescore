@@ -44,6 +44,8 @@ export function deriveSessionData(session: ReportSession): DerivedSessionData {
   const testEvents = sortedEvents.filter((e) => e.type === "RUN_TESTS");
   const submitEvents = sortedEvents.filter((e) => e.type === "SUBMIT");
   const fileOpenEvents = sortedEvents.filter((e) => e.type === "OPEN_FILE");
+  const pasteEvents = sortedEvents.filter((e) => e.type === "PASTE");
+  const blurEvents = sortedEvents.filter((e) => e.type === "WINDOW_BLUR");
 
   const aiPayloads = aiEvents.map((e) => parseJsonOr<AiPayload>(e.payload, {}));
 
@@ -106,6 +108,20 @@ export function deriveSessionData(session: ReportSession): DerivedSessionData {
       label: "Very short session",
       tone: "warn",
       hint: `Only ${durationMin} minute${durationMin === 1 ? "" : "s"} between start and end.`,
+    });
+  }
+  if (pasteEvents.length >= 3) {
+    signals.push({
+      label: `${pasteEvents.length} paste events`,
+      tone: "warn",
+      hint: "Candidate pasted code into the editor multiple times. Check the Timeline for content.",
+    });
+  }
+  if (blurEvents.length >= 5) {
+    signals.push({
+      label: `${blurEvents.length} tab switches`,
+      tone: "warn",
+      hint: "Candidate left the interview tab repeatedly. May indicate an external tool in use.",
     });
   }
 

@@ -41,4 +41,6 @@ export const EVENT_CHIP_COLORS: Record<string, string> = {
   START_SESSION: "chip-blue",
   OPEN_FILE: "chip-cyan",
   CLARIFICATION_NOTES: "chip-muted",
+  PASTE: "chip-red",
+  WINDOW_BLUR: "chip-orange",
 };
