@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const rl = rateLimit(`ai:${token}`, AI_RATE_LIMIT);
+  const rl = await rateLimit(`ai:${token}`, AI_RATE_LIMIT);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const session = await prisma.interviewSession.findUnique({

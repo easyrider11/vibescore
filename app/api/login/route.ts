@@ -3,7 +3,7 @@ import { createSession } from "../../../lib/auth";
 import { rateLimit, LOGIN_RATE_LIMIT, getClientId, rateLimitResponse } from "../../../lib/rate-limit";
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`login:${getClientId(req)}`, LOGIN_RATE_LIMIT);
+  const rl = await rateLimit(`login:${getClientId(req)}`, LOGIN_RATE_LIMIT);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const body = await req.json();

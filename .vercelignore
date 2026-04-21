@@ -1,0 +1,14 @@
+.github/
+.claude/
+docs/
+tests/
+*.test.ts
+*.test.tsx
+vitest.config.ts
+.env.example
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+DEPLOY.md
+design.md

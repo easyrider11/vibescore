@@ -8,7 +8,7 @@ const DEMO_RATE_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export async function POST(req: NextRequest) {
   const clientId = getClientId(req);
-  const rl = rateLimit(`demo:${clientId}`, DEMO_RATE_LIMIT);
+  const rl = await rateLimit(`demo:${clientId}`, DEMO_RATE_LIMIT);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   try {
