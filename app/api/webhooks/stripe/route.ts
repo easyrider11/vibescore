@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, isStripeConfigured } from "../../../../lib/stripe";
 import { handleSubscriptionEvent } from "../../../../lib/billing";
+import { captureException } from "../../../../lib/observability";
 
 /**
  * POST /api/webhooks/stripe — Handle Stripe webhook events
@@ -26,8 +27,8 @@ export async function POST(req: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET || "",
     );
   } catch (err) {
+    captureException(err, { route: "/api/webhooks/stripe", tags: { op: "signature" } });
     const message = err instanceof Error ? err.message : "Signature verification failed";
-    console.error(`Stripe webhook signature error: ${message}`);
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
@@ -45,7 +46,10 @@ export async function POST(req: NextRequest) {
         data: { object: Record<string, unknown> };
       });
     } catch (err) {
-      console.error(`Stripe webhook handler error:`, err);
+      captureException(err, {
+        route: "/api/webhooks/stripe",
+        tags: { op: "handler", eventType: event.type },
+      });
       // Return 200 to prevent Stripe retries for handler errors
     }
   }

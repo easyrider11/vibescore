@@ -9,13 +9,7 @@ interface ChartCardProps {
 
 export function ChartCard({ title, description, children, accessory }: ChartCardProps) {
   return (
-    <div
-      className="rounded-[18px] p-5"
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-default)",
-      }}
-    >
+    <div className="card p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3

@@ -33,62 +33,13 @@ export const proofPoints = [
   "Org controls",
 ] as const;
 
-export const teamOutcomes = [
-  {
-    title: "Higher signal per interview",
-    description: "Watch how candidates reason through realistic engineering work with AI, not rehearsed puzzle patterns.",
-  },
-  {
-    title: "Less interviewer variance",
-    description: "Use consistent rubrics, captured timelines, and shared evaluation context across your hiring team.",
-  },
-  {
-    title: "Faster hiring decisions",
-    description: "Move from scattered notes to a structured record of code changes, prompts, and reviewer evidence.",
-  },
-] as const;
-
-export const workflowSteps = [
-  {
-    title: "Design the session",
-    description: "Choose a realistic scenario, define the rubric, and set the interview constraints for the role.",
-  },
-  {
-    title: "Invite the candidate",
-    description: "Send a single browser-based session link with no downloads, setup, or candidate account friction.",
-  },
-  {
-    title: "Review the evidence",
-    description: "Replay decisions, inspect AI usage, compare diffs, and score the session with structured signal.",
-  },
-] as const;
-
-export const differentiators = [
-  {
-    title: "Real codebases over toy prompts",
-    description: "Candidates work inside realistic projects with enough surface area to show engineering judgment.",
-  },
-  {
-    title: "AI collaboration you can evaluate",
-    description: "See how candidates prompt, verify, and build with AI instead of hiding that part of the workflow.",
-  },
-  {
-    title: "Shared reviewer context",
-    description: "Give interviewers the same evidence trail so hiring decisions are faster and less subjective.",
-  },
-  {
-    title: "Operational controls for teams",
-    description: "Manage templates, team access, analytics, and session limits from one structured platform.",
-  },
-] as const;
-
 export const pricingPackages: readonly PricingPackage[] = [
   {
     name: "Free",
     priceLabel: "$0",
     cadenceLabel: "/ month",
     audience: "For pilots and early evaluation",
-    description: "A lightweight way to test AI-native interviews with your own team before you standardize the process.",
+    description: "Run a few sessions with your team and see if the format fits before you commit.",
     features: [
       "5 sessions per month",
       "AI auto-grading",
@@ -131,16 +82,6 @@ export const pricingPackages: readonly PricingPackage[] = [
   },
 ] as const;
 
-export const pricingComparison = [
-  { label: "Interview volume", free: "5 / month", pro: "50 / month", enterprise: "Custom" },
-  { label: "Team access", free: "Limited", pro: "Unlimited", enterprise: "Unlimited" },
-  { label: "AI usage analytics", free: "Basic", pro: "Advanced", enterprise: "Advanced" },
-  { label: "Custom scenarios", free: "No", pro: "Yes", enterprise: "Yes" },
-  { label: "Security review", free: "No", pro: "No", enterprise: "Yes" },
-  { label: "Integrations", free: "No", pro: "Standard", enterprise: "Custom" },
-  { label: "Onboarding support", free: "Self-serve", pro: "Lightweight", enterprise: "Hands-on" },
-] as const;
-
 export const pricingAudienceBands = [
   {
     title: "Pilot",
@@ -152,7 +93,7 @@ export const pricingAudienceBands = [
   },
   {
     title: "Rollout",
-    description: "Introduce AI-native interviewing with procurement, security, and workflow alignment handled upfront.",
+    description: "Roll out interviews across teams with SSO, audit logs, and procurement sorted upfront.",
   },
 ] as const;
 

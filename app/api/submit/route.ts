@@ -20,7 +20,7 @@ const SubmitSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const rl = rateLimit(`submit:${getClientId(req)}`, SUBMIT_RATE_LIMIT);
+  const rl = await rateLimit(`submit:${getClientId(req)}`, SUBMIT_RATE_LIMIT);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const raw = await req.json().catch(() => null);

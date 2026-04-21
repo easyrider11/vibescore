@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AI_NATIVE_SLUGS, isAiNativeSlug } from "../../../lib/scenarios";
 
 interface Scenario {
   id: string;
@@ -35,8 +36,14 @@ export default function NewSessionWizard() {
   useEffect(() => {
     fetch("/api/scenarios")
       .then((r) => r.json())
-      .then((data) => {
-        setScenarios(data);
+      .then((data: Scenario[]) => {
+        // Surface AI-native scenarios first.
+        const sorted = [...data].sort((a, b) => {
+          const aw = AI_NATIVE_SLUGS.has(a.slug) ? 0 : 1;
+          const bw = AI_NATIVE_SLUGS.has(b.slug) ? 0 : 1;
+          return aw - bw;
+        });
+        setScenarios(sorted);
         setLoading(false);
       });
   }, []);
@@ -189,35 +196,57 @@ export default function NewSessionWizard() {
         <div>
           <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text-secondary)" }}>Choose a template</h2>
           {loading ? (
-            <div className="text-sm" style={{ color: "var(--text-tertiary)" }}>Loading templates...</div>
+            <div className="text-sm" style={{ color: "var(--text-tertiary)" }}>Loading templates…</div>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
-              {scenarios.map((sc) => (
-                <div
-                  key={sc.id}
-                  className="rounded-xl p-4 cursor-pointer transition-colors"
-                  style={{
-                    background: selectedScenario?.id === sc.id ? "rgba(59,130,246,0.08)" : "var(--bg-surface)",
-                    border: `1px solid ${selectedScenario?.id === sc.id ? "var(--accent-blue)" : "var(--border-default)"}`,
-                  }}
-                  onClick={() => {
-                    setSelectedScenario(sc);
-                    if (sc.timeLimitMin) setDurationMinutes(sc.timeLimitMin);
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{sc.title}</h3>
-                    {sc.timeLimitMin && (
-                      <span className="text-[10px] rounded-full px-2 py-0.5" style={{ background: "var(--bg-surface-alt)", color: "var(--text-tertiary)" }}>
-                        {sc.timeLimitMin}m
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    {sc.description}
-                  </p>
-                </div>
-              ))}
+              {scenarios.map((sc) => {
+                const isAiNative = isAiNativeSlug(sc.slug);
+                const isSelected = selectedScenario?.id === sc.id;
+                return (
+                  <button
+                    key={sc.id}
+                    type="button"
+                    className="rounded-xl p-4 text-left transition-colors min-w-0"
+                    style={{
+                      background: isSelected
+                        ? "rgba(59,130,246,0.08)"
+                        : isAiNative
+                        ? "linear-gradient(135deg, rgba(59,130,246,0.05), rgba(163,113,247,0.04))"
+                        : "var(--bg-surface)",
+                      border: `1px solid ${
+                        isSelected
+                          ? "var(--accent-blue)"
+                          : isAiNative
+                          ? "rgba(88,166,255,0.35)"
+                          : "var(--border-default)"
+                      }`,
+                    }}
+                    onClick={() => {
+                      setSelectedScenario(sc);
+                      if (sc.timeLimitMin) setDurationMinutes(sc.timeLimitMin);
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{sc.title}</h3>
+                        {sc.timeLimitMin && (
+                          <span className="text-[10px] rounded-full px-2 py-0.5 shrink-0 tabular" style={{ background: "var(--bg-surface-alt)", color: "var(--text-tertiary)" }}>
+                            {sc.timeLimitMin}m
+                          </span>
+                        )}
+                      </div>
+                      {isAiNative && (
+                        <span className="chip chip-cyan shrink-0" style={{ fontSize: 10 }}>
+                          AI-native
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                      {sc.description}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -300,7 +329,7 @@ export default function NewSessionWizard() {
             />
             <div>
               <div className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>Email invite to candidate</div>
-              <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+              <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
                 Automatically send {candidateEmail || "the candidate"} a link to start the interview.
               </div>
             </div>
@@ -368,7 +397,7 @@ export default function NewSessionWizard() {
             className="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
             style={{ background: "var(--accent-green)" }}
           >
-            {creating ? "Creating..." : "Create Session"}
+            {creating ? "Creating…" : "Create Session"}
           </button>
         )}
       </div>

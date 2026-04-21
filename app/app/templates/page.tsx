@@ -68,13 +68,13 @@ export default async function TemplatesPage() {
                 </div>
                 <ul className="space-y-1">
                   {tasks.slice(0, 3).map((task, i) => (
-                    <li key={i} className="text-[11px] truncate" style={{ color: "var(--text-secondary)" }}>
+                    <li key={i} className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
                       <span className="text-accent-blue mr-1">{i + 1}.</span>
                       {typeof task === "string" ? task : String(task)}
                     </li>
                   ))}
                   {tasks.length > 3 && (
-                    <li className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>
+                    <li className="text-xs" style={{ color: "var(--text-tertiary)" }}>
                       +{tasks.length - 3} more...
                     </li>
                   )}

@@ -91,6 +91,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link href={`/app/sessions/${session.id}/live`} className="btn btn-ghost btn-sm">Live View</Link>
+          <Link href={`/app/sessions/${session.id}/report`} className="btn btn-primary btn-sm">View Report</Link>
           <Link href={`/s/${session.publicToken}`} className="btn btn-ghost btn-sm">Candidate Link</Link>
           <a href={`/api/export?sessionId=${session.id}`} className="btn btn-ghost btn-sm">Export JSON</a>
         </div>
@@ -107,7 +108,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
         ].map((stat) => (
           <div key={stat.label} className="card p-3">
             <div className="text-lg font-semibold font-mono" style={{ color: "var(--text-primary)" }}>{stat.value}</div>
-            <div className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>{stat.label}</div>
+            <div className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>{stat.label}</div>
           </div>
         ))}
       </div>
@@ -144,10 +145,10 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
                     };
                     return (
                       <div key={event.id} className="flex items-center gap-3 py-1">
-                        <span className={`chip ${typeColor[event.type] || "chip-muted"}`} style={{ minWidth: 90, justifyContent: "center" }}>
-                          {event.type.replace(/_/g, " ").toLowerCase()}
+                        <span className={`chip ${typeColor[event.type] || "chip-muted"} shrink-0`} style={{ minWidth: 90, justifyContent: "center" }}>
+                          {event.type.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
                         </span>
-                        <span className="text-xs font-mono" style={{ color: "var(--text-tertiary)" }}>
+                        <span className="text-xs font-mono tabular" style={{ color: "var(--text-tertiary)" }}>
                           {event.createdAt.toLocaleTimeString()}
                         </span>
                       </div>

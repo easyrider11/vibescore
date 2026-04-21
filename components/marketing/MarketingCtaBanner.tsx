@@ -17,21 +17,9 @@ export function MarketingCtaBanner({
   secondaryCta,
 }: MarketingCtaBannerProps) {
   return (
-    <section
-      className="relative overflow-hidden rounded-[28px] px-8 py-12 md:px-12"
-      style={{
-        background: "linear-gradient(135deg, rgba(17,24,39,1), rgba(20,29,43,1) 54%, rgba(34,42,56,1))",
-        border: "1px solid rgba(59,130,246,0.3)",
-      }}
-    >
-      <div
-        className="absolute inset-0 opacity-[0.14]"
-        style={{
-          backgroundImage: "radial-gradient(circle at top right, rgba(88,166,255,0.8), transparent 28%), radial-gradient(circle at bottom left, rgba(163,113,247,0.55), transparent 24%)",
-        }}
-      />
-      <div className="relative max-w-3xl">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
+    <section className="card px-8 py-12 md:px-12">
+      <div className="max-w-3xl">
+        <div className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--accent-cyan)" }}>
           {eyebrow}
         </div>
         <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight md:text-4xl">{title}</h2>

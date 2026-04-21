@@ -99,24 +99,25 @@ model Scenario {
 }
 
 model InterviewSession {
-  id              String        @id @default(uuid())
-  publicToken     String        @unique
-  scenarioId      String
-  status          SessionStatus @default(pending)
-  candidateName   String        @default("")
-  candidateEmail  String        @default("")
-  position        String        @default("")
-  durationMinutes Int           @default(45)
-  startedAt       DateTime?
-  endedAt         DateTime?
-  createdAt       DateTime      @default(now())
-  createdById     String
-  scenario        Scenario      @relation(fields: [scenarioId], references: [id])
-  createdBy       User          @relation(fields: [createdById], references: [id])
-  events          Event[]
-  submissions     Submission[]
-  rubricScores    RubricScore[]
-  aiGrade         AIGrade?
+  id                String        @id @default(uuid())
+  publicToken       String        @unique
+  publicReportToken String?       @unique
+  scenarioId        String
+  status            SessionStatus @default(pending)
+  candidateName     String        @default("")
+  candidateEmail    String        @default("")
+  position          String        @default("")
+  durationMinutes   Int           @default(45)
+  startedAt         DateTime?
+  endedAt           DateTime?
+  createdAt         DateTime      @default(now())
+  createdById       String
+  scenario          Scenario      @relation(fields: [scenarioId], references: [id])
+  createdBy         User          @relation(fields: [createdById], references: [id])
+  events            Event[]
+  submissions       Submission[]
+  rubricScores      RubricScore[]
+  aiGrade           AIGrade?
 }
 
 model Event {

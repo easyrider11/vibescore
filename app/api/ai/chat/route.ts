@@ -3,6 +3,7 @@ import { prisma } from "../../../../lib/prisma";
 import { parseJsonOr } from "../../../../lib/json";
 import { getAIConfig, getAnthropicClient } from "../../../../lib/ai";
 import { rateLimit, AI_RATE_LIMIT, rateLimitResponse } from "../../../../lib/rate-limit";
+import { captureException } from "../../../../lib/observability";
 
 const fallbackByMode: Record<string, string[]> = {
   summary: [
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Rate limit by session token
-  const rl = rateLimit(`ai:${token}`, AI_RATE_LIMIT);
+  const rl = await rateLimit(`ai:${token}`, AI_RATE_LIMIT);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const session = await prisma.interviewSession.findUnique({ where: { publicToken: token }, include: { scenario: true } });
@@ -165,7 +166,12 @@ Mode: ${mode}`;
       model = config.model;
       tokensUsed = (message.usage?.input_tokens ?? 0) + (message.usage?.output_tokens ?? 0);
       mocked = false;
-    } catch {
+    } catch (err) {
+      captureException(err, {
+        sessionId: session.id,
+        route: "/api/ai/chat",
+        tags: { mode, model: config.model },
+      });
       const fallback = fallbackByMode[mode] || fallbackByMode.summary;
       response = fallback[(question.length + context.length) % fallback.length];
     }

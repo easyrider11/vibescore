@@ -9,12 +9,14 @@ vi.mock("next/link", () => ({
 }));
 
 describe("landing page", () => {
-  it("prioritizes demo messaging over self-serve messaging", () => {
+  it("prioritizes demo messaging and foregrounds the AI-native thesis", () => {
     const html = renderToStaticMarkup(<LandingPage />);
 
     expect(html).toContain("Book a demo");
-    expect(html).toContain("Evaluate real AI-assisted engineering work");
-    expect(html).toContain("Why teams switch");
+    expect(html).toContain("Hire the engineers who build well");
+    expect(html).toContain("with AI");
+    expect(html).toContain("Try the interactive demo");
+    expect(html).toContain("What we record while the candidate works");
   });
 });
 

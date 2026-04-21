@@ -192,7 +192,7 @@ export default function TeamPage() {
               </select>
             </div>
             <button className="btn btn-primary text-xs" type="submit" disabled={inviting}>
-              {inviting ? "Sending..." : "Send Invite"}
+              {inviting ? "Sending…" : "Send Invite"}
             </button>
           </div>
         </form>
@@ -232,7 +232,7 @@ export default function TeamPage() {
                     {member.name || member.email}
                   </span>
                   {isMe && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: "var(--bg-inset)", color: "var(--text-tertiary)" }}>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "var(--bg-inset)", color: "var(--text-tertiary)" }}>
                       you
                     </span>
                   )}
@@ -261,7 +261,7 @@ export default function TeamPage() {
                     <option value="admin">Admin</option>
                   </select>
                 ) : (
-                  <span className={`chip ${member.role === "owner" ? "chip-blue" : "chip-muted"} text-[9px]`}>
+                  <span className={`chip ${member.role === "owner" ? "chip-blue" : "chip-muted"} text-[10px]`}>
                     {member.role}
                   </span>
                 )}
@@ -316,7 +316,7 @@ export default function TeamPage() {
                     Expires {new Date(invite.expiresAt).toLocaleDateString()}
                   </div>
                 </div>
-                <span className="chip chip-muted text-[9px]">{invite.role}</span>
+                <span className="chip chip-muted text-[10px]">{invite.role}</span>
                 {isAdmin && (
                   <button
                     className="text-[10px] px-2 py-1 rounded"

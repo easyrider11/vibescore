@@ -6,6 +6,12 @@ import { ChartCard } from "../../../components/analytics/ChartCard";
 import { WeeklyTrendChart } from "../../../components/analytics/WeeklyTrendChart";
 import { DecisionsDonut } from "../../../components/analytics/DecisionsDonut";
 import { ScenarioBarChart } from "../../../components/analytics/ScenarioBarChart";
+import {
+  DECISION_HEX,
+  DECISION_LABELS,
+  RUBRIC_LABELS,
+  type Decision,
+} from "../../../lib/rubric";
 
 interface Analytics {
   total: number;
@@ -21,20 +27,13 @@ interface Analytics {
   passRate: number | null;
 }
 
-const DECISION_META: { key: string; label: string; color: string }[] = [
-  { key: "strong_hire", label: "Strong Hire", color: "#3fb950" },
-  { key: "hire", label: "Hire", color: "#3b82f6" },
-  { key: "no_hire", label: "No Hire", color: "#d29922" },
-  { key: "strong_no_hire", label: "Strong No Hire", color: "#f85149" },
-];
-
-const RUBRIC_LABELS: Record<string, string> = {
-  repo_understanding: "Repo Understanding",
-  requirement_clarity: "Requirement Clarity",
-  delivery_quality: "Delivery Quality",
-  architecture_tradeoffs: "Architecture Tradeoffs",
-  ai_usage_quality: "AI Usage Quality",
-};
+const DECISION_META: { key: Decision; label: string; color: string }[] = (
+  Object.keys(DECISION_LABELS) as Decision[]
+).map((key) => ({
+  key,
+  label: DECISION_LABELS[key],
+  color: DECISION_HEX[key],
+}));
 
 function computeTrend(series: number[]): Trend | null {
   if (series.length < 2) return null;
@@ -97,8 +96,7 @@ export default function AnalyticsPage() {
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="h-28 animate-pulse rounded-[18px]"
-              style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              className="h-28 animate-pulse card"
             />
           ))}
         </div>
@@ -106,8 +104,7 @@ export default function AnalyticsPage() {
           {[...Array(2)].map((_, i) => (
             <div
               key={i}
-              className="h-[300px] animate-pulse rounded-[18px]"
-              style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              className="h-[300px] animate-pulse card"
             />
           ))}
         </div>
@@ -215,7 +212,7 @@ export default function AnalyticsPage() {
       {/* ── Status chips ── */}
       <section>
         <h2
-          className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em]"
+          className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]"
           style={{ color: "var(--text-tertiary)" }}
         >
           Session status

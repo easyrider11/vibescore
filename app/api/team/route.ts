@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const rl = rateLimit(`invite:${user.id}`, INVITE_RATE_LIMIT);
+  const rl = await rateLimit(`invite:${user.id}`, INVITE_RATE_LIMIT);
   if (!rl.allowed) return rateLimitResponse(rl);
 
   const org = await ensureOrg(user.id);
