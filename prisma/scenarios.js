@@ -129,6 +129,58 @@ const scenarios = [
     timeLimitMin: 60,
   },
   {
+    slug: "prompt-injection-defense",
+    title: "AI-native: Harden the support agent against prompt injection",
+    description:
+      "Two production incidents: the agent leaked its system prompt, and a user convinced it to issue a refund. Separate user input from system context, gate destructive tools, and describe what else you would defend against.",
+    background:
+      "Customer-support LLM agent with tools (get_order_status, refund_order). An adversarial user exploited lazy prompt construction and missing approval gates.",
+    tasks: [
+      "Stop the agent from leaking its system prompt when a user sends an 'ignore above instructions' injection",
+      "Stop destructive tools (refund_order) from executing without explicit approval",
+      "Describe additional injection patterns and how you would detect them in production",
+    ],
+    hints: [
+      "The user message is landing inside the system prompt — that's why the injection works",
+      "Check whether the requiresApproval flag on tools is ever actually checked",
+    ],
+    evaluationPoints: [
+      "Understands why concatenating user text into system context is the root cause",
+      "Introduces a clean separation (structured messages + tool gating)",
+      "Articulates the wider threat model: indirect injection, tool allowlists, output filters, canaries",
+      "Does not over-engineer — pragmatic first fix, follow-ups separate",
+    ],
+    rubric: defaultRubric,
+    aiPolicy: defaultAiPolicy,
+    timeLimitMin: 60,
+  },
+  {
+    slug: "rag-retrieval-miss",
+    title: "AI-native: Fix a RAG pipeline returning the wrong docs",
+    description:
+      "A docs chatbot returns the same top-1 document for every question. Debug the retrieval layer, fix the similarity and ranking bugs, and describe how you'd measure retrieval quality going forward.",
+    background:
+      "Small RAG pipeline over a 6-doc corpus. The generation layer is fine; retrieval is broken. Two subtle bugs in lib/retrieve.js.",
+    tasks: [
+      "Find and fix both bugs in lib/retrieve.js",
+      "Make tests/retrieve.test.js pass",
+      "Describe an evaluation strategy: what dataset, what metric (recall@k, MRR, NDCG), how you'd monitor it",
+    ],
+    hints: [
+      "Check whether the similarity function is actually cosine, or just a dot product",
+      "Trace a query end-to-end. Which doc comes back first, and does that make sense?",
+    ],
+    evaluationPoints: [
+      "Diagnoses the similarity bug without guessing",
+      "Catches the sort-order bug (easy to miss)",
+      "Proposes a realistic eval harness: labeled query/doc pairs + recall@k",
+      "Understands why cosine-score range matters for downstream thresholding",
+    ],
+    rubric: defaultRubric,
+    aiPolicy: defaultAiPolicy,
+    timeLimitMin: 50,
+  },
+  {
     slug: "needs-review-status",
     title: "Feature: Add Needs Review status to session list",
     description: "Add a derived status so reviewers can quickly spot completed sessions that still need manual review.",
